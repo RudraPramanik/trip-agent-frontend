@@ -1,0 +1,25 @@
+## 1. F4a — Trip detail from API (4.1)
+
+Follow [`docs/steps/batches/F4a.md`](../../../docs/steps/batches/F4a.md) and the fenced prompt **Step 4.1** in [`docs/steps/StepF4.md`](../../../docs/steps/StepF4.md). Do not add GeoJSON, MapLibre, claim, or trip list. Install **only** `react-markdown` and `remark-gfm`. Do not install `rehype-raw`, `maplibre-gl`, or Vitest. Do not reinstall `zustand`.
+
+- [x] 1.1 Ensure `.env.local` has `NEXT_PUBLIC_API_URL` (already required) and the sibling API is up with a known `trip_id` (from generate navigate or a uuid). If the API is down, **stop this section** — do not invent trip DTOs
+- [x] 1.2 `npm install react-markdown remark-gfm` once. Replace `lib/api/trips.ts` stub: `TRIP_PATH = "/api/v1/trips/{trip_id}" satisfies keyof paths`; `getTrip(tripId, signal?)` via `getJson` with `parse: "api"` → generated `TripOut`. Pass AbortSignal. Do **not** add `getTripGeojson`, list, claim, or delete
+- [x] 1.3 Add `features/trips/use-trip.ts`: `useQuery({ queryKey: ["trips", id], queryFn: ({ signal }) => getTrip(id, signal), enabled: Boolean(id), retry: 1 })`. Surface 403 / 404 / other errors for panels. Add `trip-not-found.tsx` (404 panel). Add `trip-forbidden.tsx` with two copy paths from `useAuthMe` `is_guest` (import from `features/auth` barrel only — MUST NOT import `lib/api/auth`): guest session-mismatch with **no** Login CTA; authenticated ownership copy (not the guest sentence)
+- [x] 1.4 Add `features/trips/day-narrative.tsx`: read Option A from `store/narrative.ts` by `trip_id`; render with `react-markdown` + `remark-gfm`; omit if missing. MUST NOT use `rehype-raw` or `dangerouslySetInnerHTML`. Add `trip-detail.tsx`: status/days summary, prefs chips from existing preference keys, places grouped by `day_number` / sorted by `order_in_day`, compose narrative overlay. Empty places → empty UI. No map
+- [x] 1.5 Barrel-export the page-facing trip view from `features/trips/index.ts`. Replace `app/trips/[id]/page.tsx` stub: Server Component; await `params` if this Next line types them as a Promise; pass id; mount trips barrel only. MUST NOT import `getJson`, `useQuery`, `fetch`, or MapLibre. Do not wrap in required-auth. Leave `session-header`, planner, and `store/narrative.ts` APIs unchanged
+- [x] 1.6 Run Step 4.1 validation (PowerShell in the prompt). Browser: `/trips/{known-id}` → days/stops (or empty), not the F3 stub; hard reload may omit narrative; bad uuid → not-found; guest 403 ≠ ownership 403; Network has `GET .../trips/{id}` with credentials and **no** `/geojson`. **Hard stop** — do not start 4.2 in this section
+
+## 2. F4b — GeoJSON + MapLibre (4.2)
+
+Follow [`docs/steps/batches/F4b.md`](../../../docs/steps/batches/F4b.md) and the fenced prompt **Step 4.2** in `StepF4.md`. Last F4 code step. Do not start F5 (no claim, no trip list). Do not add `rehype-raw`.
+
+- [x] 2.1 Keep `getTrip`. Add `GEOJSON_PATH = "/api/v1/trips/{trip_id}/geojson" satisfies keyof paths` and `getTripGeojson(tripId, signal?)` via `getJson` with `parse: "raw"`. Optional thin domain type under `types/` (not `types/generated/`) MAY narrow FeatureCollection Point/LineString per `frontendGuide.md` §15 — do not invent properties; do not hand-edit `api.d.ts`
+- [x] 2.2 `npm install maplibre-gl` once (add `@types/maplibre-gl` only if the package has no shipped types). Add `features/trips/use-trip-geojson.ts`: query key `["trips", id, "geojson"]`; `enabled` only when trip GET succeeded and id present; `retry: 1`; pass AbortSignal. Do not enable on 403/404 trip failures
+- [x] 2.3 Add `features/trips/trip-map.tsx` (Client Component): MapLibre map; markers from Point features; lines from LineString features; missing lines → points only; on style/tile error → collapse callback / render null. Style from `getMapStyleUrl()`; OSM-compatible fallback **only in development** when unset (with helper text that production needs MapTiler); production unset → no map. MUST NOT invent coordinates or synthesize GeoJSON from `TripOut.places`
+- [x] 2.4 Wire `trip-map` into the page-facing trips barrel beside the day list. On map collapse, list remains. `app/trips/[id]/page.tsx` still MUST NOT import maplibre or `getJson`. Export map pieces from the barrel as needed
+- [x] 2.5 Run Step 4.2 validation. Browser: trip with geojson → markers (lines when present); unset or break `NEXT_PUBLIC_MAP_STYLE_URL` → map collapses, day list still usable; Network shows `GET .../geojson` (raw FeatureCollection) only after successful trip GET; no invented coordinates; no claim/list
+
+## 3. F4 ship — stop
+
+- [x] 3.1 Run the full F4 ship checklist at the bottom of `docs/steps/StepF4.md` and confirm every item is green (including list-first prove and dual 403s)
+- [x] 3.2 Update `docs/app/system.md` to an F4 as-built snapshot (trip detail from API, dual 403 panels, Option A markdown overlay, GeoJSON + MapLibre list-first, no claim/list). Confirm this change did not implement claim, trip list, delete, day-edit, Vitest, Playwright, `rehype-raw`, or expand `StepF5.md`
