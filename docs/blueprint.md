@@ -1,10 +1,10 @@
-# Wandr — Frontend Blueprint v1.1.1 (Definitive)
+# Wandr — Frontend Blueprint v1.1.2 (Definitive)
 
 > Production-minded Next.js client for the Wandr FastAPI API. Sibling repo (not monorepo). Failure-first phases. Every step ends with a proof.
 >
-> **This file is the single source of truth for frontend development** (principles, FE AGENT guardrails, resilience/UX contracts, phased F-steps) — the FE counterpart of `docs/impSpec.md` for the backend.
+> **This file is the single source of truth for frontend development** (principles, FE AGENT guardrails, resilience/UX contracts, phased F-steps) — the FE counterpart of the API repo (`guideagent`) `docs/blueprint_final.md`.
 > **Wire contract (stack, endpoints, DTOs, SSE, GeoJSON):** `docs/frontendGuide.md` — **unchanged, still canonical**. Backend itself is not being touched until FE is built and integrated; this version only tightens what the FE does with the contract as it stands today.
-> **Backend / planner SSOT:** `docs/impSpec.md` (unchanged by this doc).
+> **Backend / planner SSOT:** In the API repo (`guideagent`): `docs/blueprint_final.md`. Do **not** vendor it here.
 
 ### This repo
 
@@ -14,9 +14,9 @@ This directory **is** the FE app (`guideagent-frontend`). Do **not** create anot
 |-------------------------|-------------------|
 | `docs/FE_guide.md` | `docs/frontendGuide.md` |
 | `docs/blueprint_frontend.md` | `docs/blueprint.md` (this file) |
-| `docs/blueprint_final.md` | `docs/impSpec.md` (backend half) |
+| `docs/blueprint_final.md` | **Not in this repo** — API repo (`guideagent`) `docs/blueprint_final.md`. Do not vendor. |
 
-**Supersedes:** v1.1. This is a **repo-retarget patch**, not a product redesign — v1.1's phase order, stack, and principles are retained. Changes are additive/clarifying, flagged inline with `🆕 v1.1.1` where they differ from v1.1. Do not use any parallel draft (e.g. retired `front_blueprint_2.md`).
+**Supersedes:** v1.1.1. This is a **repo-hygiene patch** (vendored `impSpec.md` removed), not a product redesign — v1.1.1's phase order, stack, and principles are retained. Changes are additive/clarifying, flagged inline with `🆕 v1.1.1` where they differ from v1.1. Do not use any parallel draft (e.g. retired `front_blueprint_2.md`).
 
 **Non-goals of this document:** implementing the Next.js app inside `guideagent`; changing FastAPI routes (backend stays frozen for this pass — see `docs/frontendGuide.md` §11 OAuth gap); FE hosting/VPS SOP (`docs/steps/blueprint_production.md` is API-only).
 
@@ -48,16 +48,21 @@ Everything else from v1.0 (phase order F0–F7, stack lock, cookie model, resili
 | 4 | Package table implied reinstalling Next / Tailwind | Annotate already-present rows | Package Install Order |
 | 5 | `POST /trips/{id}/claim` and `itinerary_done.trip_id` unverified vs live API | Confirm against OpenAPI in F0.6; do not invent fields | Deferred / known gaps |
 
+## What changed vs v1.1.1 (this repo)
+
+| # | Gap in v1.1.1 | Fix in v1.1.2 | Where |
+|---|---------------|---------------|-------|
+| 1 | Live pointers named `docs/impSpec.md` as a file in this repo after that dump was deleted | Backend bible / checkpoint live in the API repo (`guideagent`): `docs/blueprint_final.md`, `docs/context.md`. Do not vendor | This repo box, Doc relationship, header, footer |
+
 ---
 
 ## Doc relationship
 
 | Doc | Role |
 |-----|------|
-| `docs/frontendGuide.md` | Locked stack + live API integration contract (what to call, envelopes, auth matrix, DTOs) — **not modified this pass** |
-| **`docs/blueprint.md` (this file, v1.1.1)** | **Sole** FE build bible — principles, AGENT, fallbacks, proofs (counterpart of `impSpec.md` for backend) |
-| `docs/impSpec.md` | Backend / planner development SSOT — **frozen until FE integration is done**, then revisited together |
-| `docs/context.md` | Agent checkpoint (live endpoints, stubs) — not a FE phase tracker |
+| `docs/frontendGuide.md` | Locked stack + live API integration contract (what to call, envelopes, auth matrix, DTOs) |
+| **`docs/blueprint.md` (this file, v1.1.2)** | **Sole** FE build bible — principles, AGENT, fallbacks, proofs |
+| API repo (`guideagent`): `docs/blueprint_final.md`, `docs/context.md` | Backend / planner bible + checkpoint — **do not copy into this repo** |
 
 ### Conflict rule (wire shapes)
 
@@ -654,7 +659,7 @@ Error code catalog for toasts: **`frontendGuide.md` §16**.
 
 ## Local verification loop (API + FE)
 
-In **API** repo (`guideagent`): see `docs/context.md` / `frontendGuide.md` §10 — compose, uvicorn, seed/enrich/index, CORS includes `http://localhost:3000`.
+In **API** repo (`guideagent`): see that repo's `docs/context.md` (and this repo's `frontendGuide.md` §10) — compose, uvicorn, seed/enrich/index, CORS includes `http://localhost:3000`.
 
 In **FE** repo:
 
@@ -671,4 +676,4 @@ Failure proofs: abort mid-SSE **and confirm server-side cancellation**; 409 read
 
 ---
 
-*Source: OpenSpec change `retarget-fe-blueprint` (v1.1.1 repo-retarget on v1.1). Stack/API contract: `docs/frontendGuide.md`. Backend bible: `docs/impSpec.md` (frozen until FE integration, then revisited jointly).*
+*Source: OpenSpec change `retarget-backend-doc-refs` (v1.1.2 repo-hygiene on v1.1.1). Stack/API contract: `docs/frontendGuide.md`. Backend bible: API repo (`guideagent`) `docs/blueprint_final.md` (do not vendor here).*

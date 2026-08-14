@@ -1,19 +1,18 @@
 # Wandr — Frontend stack & API integration guide
 
-> **Canonical FE contract** for the separate Next.js app (sibling repo, not a monorepo).  
-> **Phased build bible (v1.1 SSOT):** `docs/blueprint_frontend.md` (principles, FE AGENT, F0–F7, failure contracts).  
-> Draft brainstorming lives in `docs/fe_suggestins.md` — **this file is the locked subset**.  
-> Live API routes: `docs/context.md` → Live endpoints. Update this guide when routes or public DTOs change.
+> **Canonical FE contract** for the Next.js app (sibling of the FastAPI API, not a monorepo).  
+> **Phased build bible (v1.1.2 SSOT):** `docs/blueprint.md` (principles, FE AGENT, F0–F7, failure contracts).  
+> Live API routes: API repo (`guideagent`) `docs/context.md` → Live endpoints. Update this guide when routes or public DTOs change.
 
-**Non-goals of this document:** scaffolding the Next.js app inside this API repo; changing FastAPI code; frontend hosting/VPS SOP.
+**Non-goals of this document:** changing FastAPI routes; FE hosting/VPS SOP; scaffolding a second Next.js app.
 
 ### API contract — source of truth
 
 | Priority | Source | Role |
 |----------|--------|------|
-| 1 | Live routers + `src/*/schemas.py` | Canonical |
+| 1 | Live routers + `src/*/schemas.py` (API repo `guideagent`) | Canonical |
 | 2 | OpenAPI at `{API}/docs` | Machine-readable companion |
-| 3 | `docs/context.md` → Live endpoints | Auth matrix checkpoint |
+| 3 | API repo (`guideagent`) `docs/context.md` → Live endpoints | Auth matrix checkpoint |
 | 4 | **This file** | FE-oriented mirror (stack + navigation) |
 
 If this guide disagrees with Python schemas or `/docs`, **schemas win**. Update the API-contract sections of this file in the same PR (or immediately after) when public routes/DTOs change.
@@ -24,8 +23,8 @@ If this guide disagrees with Python schemas or `/docs`, **schemas win**. Update 
 
 | Repo | Role |
 |------|------|
-| This repo (`guideagent`) | FastAPI backend + this guide |
-| Sibling FE repo (e.g. `wandr-web`) | Next.js App Router UI |
+| This repo (`guideagent-frontend`) | Next.js App Router UI + this guide |
+| Sibling API repo (`guideagent`) | FastAPI backend |
 
 When the API is reachable at a stable host, the FE switches only:
 
@@ -224,7 +223,7 @@ data: <json>
 
 Ignore unknown event names (log in dev). Spec catalog may include `tool_started` / `validation_done` even when a given run omits them.
 
-Proxy note (prod): reverse proxy must not buffer this path (see `docs/context.md` / production blueprint).
+Proxy note (prod): reverse proxy must not buffer this path (see API repo (`guideagent`) `docs/context.md` / production blueprint).
 
 Optional later: Vercel AI SDK only if you add a true chat surface — **not** as the MVP planner client.
 
@@ -322,7 +321,7 @@ In the **API** repo:
 docker compose up -d          # PostGIS :5433, Qdrant :6335 only
 # configure .env (DATABASE_URL, LLM_*, CORS includes http://localhost:3000)
 uvicorn src.main:app --reload --port 8000
-# seed + enrich + index at least one destination (see docs/context.md scripts)
+# seed + enrich + index at least one destination (see API repo (`guideagent`) docs/context.md scripts)
 # OpenAPI: http://localhost:8000/docs
 ```
 
@@ -596,4 +595,4 @@ Exact numbers are config-driven (`RATE_LIMIT_*` in settings); treat the table as
 
 ---
 
-*Source decisions: OpenSpec changes `frontend-stack-guide`, `fe-api-contract-guide`, `fe-guide-map-tiles`. Input draft: `docs/fe_suggestins.md`.*
+*Source decisions: OpenSpec changes `frontend-stack-guide`, `fe-api-contract-guide`, `fe-guide-map-tiles` (API repo history). Input draft lived in that repo's `docs/fe_suggestins.md` — not a file here.*

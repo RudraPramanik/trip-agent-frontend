@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Wandr frontend
 
-## Getting Started
+Next.js client for the Wandr API (sibling repo `guideagent`). This directory **is** the app — do not run `create-next-app` or add a nested `wandr-web/` folder.
 
-First, run the development server:
+## Requirements
+
+- **Node** 20+ (`engines.node`)
+- **npm** (`package-lock.json`) — do not add `yarn.lock` or `pnpm-lock.yaml`
+
+## Local dev
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Copy `.env.example` to `.env.local` (never commit `.env.local`):
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000
+# NEXT_PUBLIC_MAP_STYLE_URL=
+```
 
-## Learn More
+Do not put `DATABASE_URL`, Redis, LLM, or OAuth secrets in this repo — those belong on the API.
 
-To learn more about Next.js, take a look at the following resources:
+Health smoke: `GET {API}/api/v1/health`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Type-lock
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Whenever backend DTOs or routes change, start the API and regenerate wire types (same discipline as `alembic upgrade head`):
 
-## Deploy on Vercel
+```bash
+npm run gen:types
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Commit the diff in `types/generated/api.d.ts`. Never hand-edit that file.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Notes from the current OpenAPI snapshot (do not invent missing fields):
+
+- `POST /api/v1/trips/{trip_id}/claim` is present.
+- `GET /api/v1/health` 200 schema is empty in OpenAPI (`response_model=None`); the client parses a generic `ApiResponse`.
+- `itinerary_done` appears in the planner generate description, not as a typed schema with `trip_id`.
+
+## Docs
+
+- [`docs/blueprint.md`](docs/blueprint.md) — FE build bible (phases, guardrails, proofs)
+- [`docs/frontendGuide.md`](docs/frontendGuide.md) — wire contract (endpoints, envelopes, DTOs)

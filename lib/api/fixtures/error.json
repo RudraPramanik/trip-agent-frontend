@@ -1,0 +1,6 @@
+{
+  "success": false,
+  "code": "db_unavailable",
+  "message": "Database unreachable",
+  "details": null
+}
