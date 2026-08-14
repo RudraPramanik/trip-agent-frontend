@@ -1,4 +1,4 @@
-# Wandr — Frontend Blueprint v1.1.2 (Definitive)
+# Wandr — Frontend Blueprint v1.1.3 (Definitive)
 
 > Production-minded Next.js client for the Wandr FastAPI API. Sibling repo (not monorepo). Failure-first phases. Every step ends with a proof.
 >
@@ -16,7 +16,7 @@ This directory **is** the FE app (`guideagent-frontend`). Do **not** create anot
 | `docs/blueprint_frontend.md` | `docs/blueprint.md` (this file) |
 | `docs/blueprint_final.md` | **Not in this repo** — API repo (`guideagent`) `docs/blueprint_final.md`. Do not vendor. |
 
-**Supersedes:** v1.1.1. This is a **repo-hygiene patch** (vendored `impSpec.md` removed), not a product redesign — v1.1.1's phase order, stack, and principles are retained. Changes are additive/clarifying, flagged inline with `🆕 v1.1.1` where they differ from v1.1. Do not use any parallel draft (e.g. retired `front_blueprint_2.md`).
+**Supersedes:** v1.1.2. This is an **additive guardrail patch** (principle #16 Modular by default), not a product redesign — v1.1.2's phase order, stack, and principles 1–15 are retained. Changes are additive/clarifying, flagged inline with `🆕 v1.1.3` where they differ from v1.1.2. Do not use any parallel draft (e.g. retired `front_blueprint_2.md`).
 
 **Non-goals of this document:** implementing the Next.js app inside `guideagent`; changing FastAPI routes (backend stays frozen for this pass — see `docs/frontendGuide.md` §11 OAuth gap); FE hosting/VPS SOP (`docs/steps/blueprint_production.md` is API-only).
 
@@ -54,6 +54,12 @@ Everything else from v1.0 (phase order F0–F7, stack lock, cookie model, resili
 |---|---------------|---------------|-------|
 | 1 | Live pointers named `docs/impSpec.md` as a file in this repo after that dump was deleted | Backend bible / checkpoint live in the API repo (`guideagent`): `docs/blueprint_final.md`, `docs/context.md`. Do not vendor | This repo box, Doc relationship, header, footer |
 
+## What changed vs v1.1.2 (this repo)
+
+| # | Gap in v1.1.2 | Fix in v1.1.3 | Where |
+|---|---------------|---------------|-------|
+| 1 | Modularity was only a one-line Feature folders hint; F1 had to lock layers in the playbook to keep fetch out of the header | New **principle #16 Modular by default**: HTTP in `lib/api/{domain}.ts`, Query hooks/UI in `features/{domain}/`, `app/` only mounts barrels | Principles #16, AGENTS.md Architecture, LLD |
+
 ---
 
 ## Doc relationship
@@ -61,7 +67,7 @@ Everything else from v1.0 (phase order F0–F7, stack lock, cookie model, resili
 | Doc | Role |
 |-----|------|
 | `docs/frontendGuide.md` | Locked stack + live API integration contract (what to call, envelopes, auth matrix, DTOs) |
-| **`docs/blueprint.md` (this file, v1.1.2)** | **Sole** FE build bible — principles, AGENT, fallbacks, proofs |
+| **`docs/blueprint.md` (this file, v1.1.3)** | **Sole** FE build bible — principles, AGENT, fallbacks, proofs |
 | API repo (`guideagent`): `docs/blueprint_final.md`, `docs/context.md` | Backend / planner bible + checkpoint — **do not copy into this repo** |
 
 ### Conflict rule (wire shapes)
@@ -96,6 +102,7 @@ If this file disagrees with Python schemas or `frontendGuide.md` on a public rou
 | 13 | **Degrade the map, don't blank the trip** — missing polylines → points only; tile fail → list-first UI |
 | 14 | **Never render untrusted content as raw HTML** — LLM-authored narrative renders as plain markdown only; no raw-HTML passthrough 🆕 v1.1 |
 | 15 | **Usable without a mouse or a laptop** — keyboard nav + ARIA-live on SSE progress; layout works down to a phone viewport; both are hardening-phase deliverables, not afterthoughts 🆕 v1.1 |
+| 16 | **Modular by default** — HTTP in `lib/api/{domain}.ts`; Query hooks and UI in `features/{domain}/`; `app/` and layout only mount public barrels. Do not dump fetch, Query keys, or DTO parsing into `app/layout.tsx`, `app/page.tsx`, `components/`, or a global `hooks/` folder. Features compose at the page; they do not import each other’s HTTP modules 🆕 v1.1.3 |
 
 ---
 
@@ -116,6 +123,7 @@ If this file disagrees with Python schemas or `frontendGuide.md` on a public rou
 - Do NOT store access tokens in `localStorage`, sessionStorage, or readable JS cookies.
 - Server/async state: TanStack Query. Ephemeral UI (wizard, map selection, session narrative cache): thin Zustand only — never Redux.
 - Feature folders (`features/auth`, `destinations`, `planner`, `trips`) over dumping everything in `components/`.
+- 🆕 Modular by default — HTTP in `lib/api/{domain}.ts`; Query hooks and UI in `features/{domain}/`; `app/` and layout only mount public barrels. Do not dump fetch, Query keys, or DTO parsing into `app/layout.tsx`, `app/page.tsx`, `components/`, or a global `hooks/` folder. Features compose at the page; they do not import each other’s HTTP modules.
 - FastAPI owns auth. No Better Auth / NextAuth session ownership in MVP.
 - Do NOT invent endpoints, DTO fields, or evaluation HTTP clients. Follow `docs/frontendGuide.md` + OpenAPI.
 - 🆕 Hand-written types in `types/` are a thin domain layer ONLY. The source of truth for wire shapes is `types/generated/api.d.ts` (generated from OpenAPI — see F0.6). Never hand-edit generated files; regenerate instead.
@@ -306,6 +314,7 @@ Error code catalog for toasts: **`frontendGuide.md` §16**.
 | **Null / empty UI** | sparse readiness, empty trip list, map no-lines |
 | **Cookie session probe** | `GET /auth/me` |
 | **Feature folders** | `features/*` |
+| **Modular layers** 🆕 | HTTP in `lib/api/{domain}.ts`; hooks/UI in `features/{domain}/`; pages mount barrels |
 | **List-first degrade** | trip page when tiles fail |
 | **Codegen type boundary** 🆕 | `types/generated/api.d.ts` ← OpenAPI, everything else composes it |
 
@@ -654,6 +663,7 @@ Error code catalog for toasts: **`frontendGuide.md` §16**.
 | Render narrative via `react-markdown` only | Use `rehype-raw` or `dangerouslySetInnerHTML` on LLM text |
 | Re-submit a fresh `/generate` call on clarification answers | Try to "resume" a terminated SSE stream |
 | Give guest-session-mismatch 403s distinct copy | Show a login CTA for a 403 that login can't fix |
+| Keep HTTP / hooks / UI in domain modules and feature folders; pages mount barrels | Dump fetch, Query keys, or DTO parsing into `app/layout.tsx`, `app/page.tsx`, `components/`, or a global `hooks/` folder |
 
 ---
 
@@ -676,4 +686,4 @@ Failure proofs: abort mid-SSE **and confirm server-side cancellation**; 409 read
 
 ---
 
-*Source: OpenSpec change `retarget-backend-doc-refs` (v1.1.2 repo-hygiene on v1.1.1). Stack/API contract: `docs/frontendGuide.md`. Backend bible: API repo (`guideagent`) `docs/blueprint_final.md` (do not vendor here).*
+*Source: OpenSpec change `author-fe-step-f2` (v1.1.3 modular-by-default on v1.1.2). Stack/API contract: `docs/frontendGuide.md`. Backend bible: API repo (`guideagent`) `docs/blueprint_final.md` (do not vendor here).*

@@ -19,7 +19,7 @@ Merging several sub-steps into a **single prompt body** is how later items get s
 4. After the agent finishes, run the listed validation yourself. Only then start the next batch.
 5. If the agent jumps ahead, adds packages not listed, or skips a failure boundary: stop. Paste the correction note at the bottom of that prompt and re-run.
 
-Do **not** start F{n+1} until that phase’s ship checklist is green. Expand `StepF2.md`–`StepF7.md` from outlines into full prompts only after the previous phase ships.
+Do **not** start F{n+1} until that phase’s ship checklist is green. Expand `StepF3.md`–`StepF7.md` from outlines into full prompts only after the previous phase ships.
 
 ## F0 batches (this repo)
 
@@ -39,6 +39,15 @@ Blueprint numbers (0.3, 0.4, 0.6, …) are unchanged. **Run order** is dependenc
 | [`batches/F1b.md`](batches/F1b.md) | 1.3 | F1a green |
 
 Blueprint numbers 1.1–1.3. **Run order** is numeric. HTTP module before chrome so the header never owns fetch.
+
+## F2 batches (this repo)
+
+| Batch | Sub-steps | Needs |
+|-------|-----------|--------|
+| [`batches/F2a.md`](batches/F2a.md) | 2.1 | F1 ship green; local API up (`GET /api/v1/destinations/search?q=Da`) |
+| [`batches/F2b.md`](batches/F2b.md) | 2.2 | F2a green |
+
+Blueprint numbers 2.1–2.2. **Run order** is numeric. Search HTTP before readiness so the header never owns destinations fetch and `sparse` is not hard-blocked.
 
 ## This repo
 

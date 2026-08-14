@@ -14,6 +14,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Do NOT store access tokens in `localStorage`, sessionStorage, or readable JS cookies.
 - Server/async state: TanStack Query. Ephemeral UI (wizard, map selection, session narrative cache): thin Zustand only — never Redux.
 - Feature folders (`features/auth`, `destinations`, `planner`, `trips`) over dumping everything in `components/`.
+- 🆕 Modular by default — HTTP in `lib/api/{domain}.ts`; Query hooks and UI in `features/{domain}/`; `app/` and layout only mount public barrels. Do not dump fetch, Query keys, or DTO parsing into `app/layout.tsx`, `app/page.tsx`, `components/`, or a global `hooks/` folder. Features compose at the page; they do not import each other’s HTTP modules.
 - FastAPI owns auth. No Better Auth / NextAuth session ownership in MVP.
 - Do NOT invent endpoints, DTO fields, or evaluation HTTP clients. Follow `docs/frontendGuide.md` + OpenAPI.
 - 🆕 Hand-written types in `types/` are a thin domain layer ONLY. The source of truth for wire shapes is `types/generated/api.d.ts` (generated from OpenAPI — see F0.6). Never hand-edit generated files; regenerate instead.
