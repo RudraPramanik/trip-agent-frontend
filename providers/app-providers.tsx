@@ -9,6 +9,16 @@ import {
 import { Toaster, toast } from "sonner";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 
+interface QueryMeta extends Record<string, unknown> {
+  skipErrorToast?: boolean;
+}
+
+declare module "@tanstack/react-query" {
+  interface Register {
+    queryMeta: QueryMeta;
+  }
+}
+
 function errorMessage(error: unknown): string {
   if (error instanceof ApiError || error instanceof NetworkError) {
     return error.message;
@@ -26,7 +36,12 @@ function notifyError(error: unknown) {
 function makeQueryClient() {
   return new QueryClient({
     queryCache: new QueryCache({
-      onError: notifyError,
+      onError: (error, query) => {
+        if (query.meta?.skipErrorToast) {
+          return;
+        }
+        notifyError(error);
+      },
     }),
     mutationCache: new MutationCache({
       onError: notifyError,
