@@ -1,6 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useDestinationReadiness } from "./use-destination-readiness";
 
 function formatPct(value: number): string {
@@ -89,8 +91,13 @@ export function ReadinessCard({ destinationId }: ReadinessCardProps) {
         <p className={warningClass}>{message}</p>
       ) : null}
       <div className="flex flex-col gap-1.5">
-        <Button type="button">Generate</Button>
-        <p className="text-xs text-zinc-500">Compose is next (F3).</p>
+        <Link
+          href={`/generate?destination=${encodeURIComponent(id)}`}
+          className={cn(buttonVariants())}
+        >
+          Generate
+        </Link>
+        <p className="text-xs text-zinc-500">Compose your trip next.</p>
       </div>
     </section>
   );

@@ -1,0 +1,8 @@
+event: preferences_done
+data: {"preferences":{"days":4}}
+
+event: phase_changed
+data: {"phase":"planning"}
+
+event: error
+data: {"code":"generation_timeout"}

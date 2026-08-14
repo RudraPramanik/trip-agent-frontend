@@ -1,0 +1,8 @@
+event: preferences_done
+data: {"preferences":{"days":3},"from_cache":true}
+
+event: phase_changed
+data: {"phase":"done","from_cache":true}
+
+event: itinerary_done
+data: {"trip_id":"22222222-2222-4222-8222-222222222222","from_cache":true,"days":[{"day":1,"title":"Cached day","narrative":"Replay without tool events."}]}

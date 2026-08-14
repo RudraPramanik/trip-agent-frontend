@@ -1,0 +1,33 @@
+## 1. F3a — Compose PlanRequest (3.1)
+
+Follow [`docs/steps/batches/F3a.md`](../../../docs/steps/batches/F3a.md) and the fenced prompt **Step 3.1** in [`docs/steps/StepF3.md`](../../../docs/steps/StepF3.md). Do not add SSE, EventSource, Zustand, or `POST /planner/generate`. Do not install packages (RHF/Zod already present).
+
+- [x] 1.1 Ensure `.env.local` exists with `NEXT_PUBLIC_API_URL=http://localhost:8000`. Confirm a destination can be selected on home (or a known uuid in `?destination=`). If the sibling API is down, **stop this section** — do not invent destination ids
+- [x] 1.2 Add `features/planner/compose-form.tsx` (`"use client"`): RHF + Zod mirroring generated `PlanRequest` (`raw_input` min 1; optional `days` / `base_lat` / `base_lng` / `accommodation_label`; `destination_id` from props). Labels for a11y. Empty destination id → pick-a-destination copy + `Link` to `/` instead of the form. Submit MUST NOT fetch. No Zustand
+- [x] 1.3 Barrel-export the page-facing compose component from `features/planner/index.ts`. Add `app/generate/page.tsx` as a Server Component: await `searchParams` if this Next line types them as a Promise (check `node_modules/next/dist/docs/`), pass destination id, mount the planner barrel only. MUST NOT import `getJson`, `sendJson`, `fetch`, `useQuery`, or `EventSource`. Do not wrap `/generate` in required-auth
+- [x] 1.4 Change `features/destinations/readiness-card.tsx` Generate to a `Link` (or Button asChild + Link) to `/generate?destination=${id}` when id is present. Keep it enabled for `ready` / `limited` / `sparse`. MUST NOT import `lib/sse/planner`, `lib/api/planner`, or POST generate. Leave `session-header` unchanged
+- [x] 1.5 Leave `lib/sse/planner.ts` and `lib/api/planner.ts` as `export {}`. Run Step 3.1 validation (PowerShell in the prompt). Browser: home Generate → `/generate?destination=<uuid>` with a form; empty `raw_input` → field error and no POST; `/generate` with no query → pick-a-destination; sparse Generate link still works. **Hard stop** — do not start 3.2 in this section
+
+## 2. F3b — Abortable SSE client (3.2)
+
+Follow [`docs/steps/batches/F3b.md`](../../../docs/steps/batches/F3b.md) and the fenced prompt **Step 3.2** in `StepF3.md`. No new packages. No `EventSource`. No `getJson` / `sendJson` for generate. Do not add progress-panel, clarification-form, Zustand, or `/trips/[id]`.
+
+- [x] 2.1 Replace `lib/sse/planner.ts` stub: `GENERATE_PATH = "/api/v1/planner/generate" satisfies keyof paths`; `generatePlanner(request, signal)` POSTs via `fetch` to `getPublicApiUrl() + path` with `credentials: "include"`, `Accept: text/event-stream`, JSON `PlanRequest` body, and the caller’s `AbortSignal` in `fetch`. If `!res.ok`, parse JSON via `parseErrorResponse` / `ApiError` (especially 409 `destination_not_ready`). If ok, parse `ReadableStream` `event:`/`data:` frames until a terminal. Pure `parseSseFrames` (or equivalent) for fixtures. MUST NOT import `EventSource`, `getJson`, or `sendJson`. MUST NOT apply a 20s timeout
+- [x] 2.2 Commit SSE fixtures under `lib/sse/fixtures/` (plain text): progress + `itinerary_done`, `clarification_needed`, `error`, and cache-hit omitting `tool_*`. Do not install Vitest or `motion`
+- [x] 2.3 Add `features/planner/use-planner-generate.ts`: owns `AbortController`; `start(request)` / `cancel()`; abort previous on new submit; abort in `useEffect` cleanup; `retry: none`; surface 409 vs other errors vs streaming vs idle. Optionally invalidate `["destinations","readiness", id]` by key tuple — do not import `lib/api/destinations`
+- [x] 2.4 Wire compose valid submit to `start(planRequest)`. While streaming: Generating + Cancel. On 409: panel + `Link` to `/?destination=`. Other pre-stream errors: typed toast + panel. 429 / `rate_limit_exceeded`: existing toast + brief submit disable (~2s). Leave `lib/api/planner.ts` as `export {}`. Page still MUST NOT fetch
+- [x] 2.5 Run Step 3.2 validation. Browser: valid submit → POST SSE or 409 JSON (409 is not parsed as SSE); empty `raw_input` still does not POST. **REQUIRED abort-integrity:** Cancel or navigate away mid-stream, then confirm **API logs** show the background task canceled within a few seconds (`request.is_disconnected` / task cancelled). Client-only “reader stopped” is **not** sufficient. **Hard stop** — do not start 3.3 in this section
+
+## 3. F3c — Progress + terminals + clarification (3.3)
+
+Follow [`docs/steps/batches/F3c.md`](../../../docs/steps/batches/F3c.md) and the fenced prompt **Step 3.3** in `StepF3.md`. Do not `GET /trips/{id}`, add MapLibre, `react-markdown`, Vitest, or `motion`.
+
+- [x] 3.1 `npm install zustand` once. Add `store/narrative.ts`: set/get day title/narrative by `trip_id`; comment that hard reload may lose it. Do not put compose fields in Zustand. Do not invent a narrative API
+- [x] 3.2 Add `buildClarificationRawInput(original, answer)` in `lib/sse/planner.ts` (or a tiny sibling) returning `` `${original}\n${answer}` `` (preserve original exactly). Add `features/planner/progress-panel.tsx` (`aria-live` polite) for `preferences_done` / `phase_changed` / `tool_*` / `validation_done`; cache hit without `tool_*` is OK. Add `features/planner/clarification-form.tsx`: inline question (prefer `data.question` string); original `raw_input` stays visible; not a page-blocking modal
+- [x] 3.3 Wire terminals: `itinerary_done` → cache narrative if present, navigate `/trips/${trip_id}` only when `trip_id` is a non-empty string, else error panel (no `/trips/undefined`); SSE `error` / `generation_timeout` / `graph_recursion_limit` → terminal error panel, no auto-retry; `clarification_needed` → clarification form (not an error toast); answer submit → new `AbortController`, abort previous, reset progress, `start` with rebuilt `PlanRequest`. Add stub `app/trips/[id]/page.tsx` (“Trip detail lands in F4.”) with no trips HTTP. `lib/api/planner.ts` and `lib/api/trips.ts` stay stubs
+- [x] 3.4 Run Step 3.3 validation. Browser: progress updates or jumps on cache hit; `itinerary_done` with `trip_id` → stub trip page (not 404); clarification answer → **new** POST whose `raw_input` contains a newline; Network has no `EventSource` and no `GET /api/v1/trips/{id}`
+
+## 4. F3 ship — stop
+
+- [x] 4.1 Run the full F3 ship checklist at the bottom of `docs/steps/StepF3.md` and confirm every item is green (including F3b abort-integrity already noted)
+- [x] 4.2 Update `docs/app/system.md` to an F3 as-built snapshot (compose on `/generate`, abortable SSE, clarification fresh POST, Zustand narrative Option A, stub trip route, Generate is a Link). Confirm this change did not implement `GET /trips/{id}`, MapLibre, `react-markdown`, Vitest, `motion`, fill `lib/api/planner.ts`, or expand `StepF4.md`

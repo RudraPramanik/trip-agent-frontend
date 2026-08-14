@@ -1,0 +1,8 @@
+event: preferences_done
+data: {"preferences":{"days":2}}
+
+event: phase_changed
+data: {"phase":"clarifying"}
+
+event: clarification_needed
+data: {"question":"How many days do you want to spend in the hills?"}
