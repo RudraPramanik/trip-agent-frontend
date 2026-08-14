@@ -22,7 +22,10 @@ export function SessionHeader() {
       <Link href="/" className="font-semibold tracking-tight">
         Wandr
       </Link>
-      <Link href="/" className="text-sm underline-offset-4 hover:underline">
+      <Link
+        href="/#destination-search"
+        className="text-sm underline-offset-4 hover:underline"
+      >
         Search
       </Link>
       <div className="ml-auto flex flex-wrap items-center gap-2">
