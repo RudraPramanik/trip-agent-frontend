@@ -1,7 +1,9 @@
 "use client";
 
 import type { TripOut, TripPlaceOut } from "@/lib/api/trips";
+import { ClaimTripButton } from "./claim-trip-button";
 import { DayNarrative } from "./day-narrative";
+import { DeleteTripControl } from "./delete-trip-control";
 
 type TripDetailProps = {
   trip: TripOut;
@@ -69,6 +71,10 @@ export function TripDetail({ trip }: TripDetailProps) {
             ))}
           </ul>
         ) : null}
+        <div className="flex flex-wrap items-center gap-2 pt-2">
+          <ClaimTripButton trip={trip} />
+          <DeleteTripControl tripId={trip.id} navigateAway />
+        </div>
       </header>
 
       {places.length === 0 ? (

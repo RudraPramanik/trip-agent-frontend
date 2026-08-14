@@ -19,7 +19,7 @@ Merging several sub-steps into a **single prompt body** is how later items get s
 4. After the agent finishes, run the listed validation yourself. Only then start the next batch.
 5. If the agent jumps ahead, adds packages not listed, or skips a failure boundary: stop. Paste the correction note at the bottom of that prompt and re-run.
 
-Do **not** start F{n+1} until that phase’s ship checklist is green. Expand `StepF5.md`–`StepF7.md` from outlines into full prompts only after the previous phase ships.
+Do **not** start F{n+1} until that phase’s ship checklist is green. Expand the next outline (`StepF6.md`–`StepF7.md`) into full prompts only after the previous phase ships.
 
 ## F0 batches (this repo)
 
@@ -66,7 +66,16 @@ Blueprint numbers 3.1–3.3. **Run order** is numeric. Compose before SSE so inv
 | [`batches/F4a.md`](batches/F4a.md) | 4.1 | F3 ship green; local API up; a known `trip_id` |
 | [`batches/F4b.md`](batches/F4b.md) | 4.2 | F4a green; MapTiler URL optional (unset proves list-first) |
 
-Blueprint numbers 4.1–4.2. **Run order** is numeric. Trip detail before MapLibre so list-first degrade is not skipped. Expand F4 only after F3 ship (already true). Leave `StepF5.md`–`StepF7.md` as outlines until F4 ships.
+Blueprint numbers 4.1–4.2. **Run order** is numeric. Trip detail before MapLibre so list-first degrade is not skipped. Expand F4 only after F3 ship (already true).
+
+## F5 batches (this repo)
+
+| Batch | Sub-steps | Needs |
+|-------|-----------|--------|
+| [`batches/F5a.md`](batches/F5a.md) | 5.1 | F4 ship green; local API up (`NEXT_PUBLIC_API_URL`); auth cookie for list proofs |
+| [`batches/F5b.md`](batches/F5b.md) | 5.2 → 5.3 | F5a green; claim best-effort on local cookies until `FRONTEND_URL` bounce |
+
+Blueprint numbers 5.1–5.3. **Run order** is numeric. List before claim/delete so 401→login CTA and empty-list proofs are not skipped. F5 needs **`NEXT_PUBLIC_API_URL` only** — no new FE API keys. Expand F5 only after F4 ship (already true). Leave `StepF6.md`–`StepF7.md` as outlines until F5 ships.
 
 ## This repo
 
