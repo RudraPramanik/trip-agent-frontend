@@ -19,7 +19,7 @@ Merging several sub-steps into a **single prompt body** is how later items get s
 4. After the agent finishes, run the listed validation yourself. Only then start the next batch.
 5. If the agent jumps ahead, adds packages not listed, or skips a failure boundary: stop. Paste the correction note at the bottom of that prompt and re-run.
 
-Do **not** start F{n+1} until that phase’s ship checklist is green. Expand `StepF3.md`–`StepF7.md` from outlines into full prompts only after the previous phase ships.
+Do **not** start F{n+1} until that phase’s ship checklist is green. Expand `StepF4.md`–`StepF7.md` from outlines into full prompts only after the previous phase ships.
 
 ## F0 batches (this repo)
 
@@ -48,6 +48,16 @@ Blueprint numbers 1.1–1.3. **Run order** is numeric. HTTP module before chrome
 | [`batches/F2b.md`](batches/F2b.md) | 2.2 | F2a green |
 
 Blueprint numbers 2.1–2.2. **Run order** is numeric. Search HTTP before readiness so the header never owns destinations fetch and `sparse` is not hard-blocked.
+
+## F3 batches (this repo)
+
+| Batch | Sub-steps | Needs |
+|-------|-----------|--------|
+| [`batches/F3a.md`](batches/F3a.md) | 3.1 | F2 ship green; local API up; a selectable destination (or `?destination=` uuid) |
+| [`batches/F3b.md`](batches/F3b.md) | 3.2 | F3a green; API accepts `POST /planner/generate` (SSE or 409); abort proof needs API logs |
+| [`batches/F3c.md`](batches/F3c.md) | 3.3 | F3b green including server-side abort-integrity |
+
+Blueprint numbers 3.1–3.3. **Run order** is numeric. Compose before SSE so invalid forms never POST. F3.2 is its own session so abort-integrity is not skipped. Expand F3 only after F2 ship (already true).
 
 ## This repo
 
