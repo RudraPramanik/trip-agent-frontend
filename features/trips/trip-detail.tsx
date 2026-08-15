@@ -1,7 +1,9 @@
 "use client";
 
 import type { TripOut, TripPlaceOut } from "@/lib/api/trips";
+import { AddStopControl } from "./add-stop-control";
 import { ClaimTripButton } from "./claim-trip-button";
+import { DayEditControls } from "./day-edit-controls";
 import { DayNarrative } from "./day-narrative";
 import { DeleteTripControl } from "./delete-trip-control";
 
@@ -45,7 +47,11 @@ function groupPlacesByDay(places: TripPlaceOut[]): Map<number, TripPlaceOut[]> {
 export function TripDetail({ trip }: TripDetailProps) {
   const places = trip.places ?? [];
   const byDay = groupPlacesByDay(places);
-  const dayNumbers = [...byDay.keys()].sort((a, b) => a - b);
+  const dayCount = Math.max(trip.days, 0);
+  const dayNumbers =
+    dayCount > 0
+      ? Array.from({ length: dayCount }, (_, i) => i + 1)
+      : [...byDay.keys()].sort((a, b) => a - b);
   const prefs = preferenceEntries(trip.preferences);
 
   return (
@@ -77,7 +83,7 @@ export function TripDetail({ trip }: TripDetailProps) {
         </div>
       </header>
 
-      {places.length === 0 ? (
+      {dayNumbers.length === 0 ? (
         <div className="space-y-3">
           <DayNarrative tripId={trip.id} />
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -94,25 +100,37 @@ export function TripDetail({ trip }: TripDetailProps) {
                   Day {dayNumber}
                 </h2>
                 <DayNarrative tripId={trip.id} dayNumber={dayNumber} />
-                <ol className="list-decimal space-y-2 pl-5 text-sm">
-                  {dayPlaces.map((place) => (
-                    <li key={place.id} className="pl-1">
-                      <span className="font-medium">
-                        {place.name?.trim() || "Stop"}
-                      </span>
-                      {place.suggested_start_time ? (
-                        <span className="ml-2 text-zinc-500">
-                          {place.suggested_start_time}
+                {dayPlaces.length === 0 ? (
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                    No stops on this day yet.
+                  </p>
+                ) : (
+                  <ol className="list-decimal space-y-2 pl-5 text-sm">
+                    {dayPlaces.map((place) => (
+                      <li key={place.id} className="pl-1">
+                        <span className="font-medium">
+                          {place.name?.trim() || "Stop"}
                         </span>
-                      ) : null}
-                      {place.arrival_note ? (
-                        <p className="mt-0.5 text-zinc-600 dark:text-zinc-400">
-                          {place.arrival_note}
-                        </p>
-                      ) : null}
-                    </li>
-                  ))}
-                </ol>
+                        {place.suggested_start_time ? (
+                          <span className="ml-2 text-zinc-500">
+                            {place.suggested_start_time}
+                          </span>
+                        ) : null}
+                        {place.arrival_note ? (
+                          <p className="mt-0.5 text-zinc-600 dark:text-zinc-400">
+                            {place.arrival_note}
+                          </p>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ol>
+                )}
+                <DayEditControls
+                  trip={trip}
+                  dayNumber={dayNumber}
+                  places={dayPlaces}
+                />
+                <AddStopControl trip={trip} dayNumber={dayNumber} />
               </section>
             );
           })}

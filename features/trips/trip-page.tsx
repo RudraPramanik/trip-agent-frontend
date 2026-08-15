@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PlacesPicker } from "@/features/places";
 import { getMapStyleUrl } from "@/lib/config";
 import { useTrip } from "./use-trip";
 import { useTripGeojson } from "./use-trip-geojson";
@@ -82,6 +83,10 @@ export function TripPage({ tripId }: TripPageProps) {
         />
       ) : null}
       <TripDetail trip={trip.data} />
+      <section className="flex w-full max-w-2xl flex-col gap-2">
+        <h2 className="text-sm font-semibold tracking-tight">Places</h2>
+        <PlacesPicker destinationId={trip.data.destination_id} />
+      </section>
     </div>
   );
 }

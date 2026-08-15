@@ -19,7 +19,7 @@ Merging several sub-steps into a **single prompt body** is how later items get s
 4. After the agent finishes, run the listed validation yourself. Only then start the next batch.
 5. If the agent jumps ahead, adds packages not listed, or skips a failure boundary: stop. Paste the correction note at the bottom of that prompt and re-run.
 
-Do **not** start F{n+1} until that phase’s ship checklist is green. Expand the next outline (`StepF6.md`–`StepF7.md`) into full prompts only after the previous phase ships.
+Do **not** start F{n+1} until that phase’s ship checklist is green. Expand the next outline (`StepF7.md`) into full prompts only after F6 ships.
 
 ## F0 batches (this repo)
 
@@ -75,7 +75,16 @@ Blueprint numbers 4.1–4.2. **Run order** is numeric. Trip detail before MapLib
 | [`batches/F5a.md`](batches/F5a.md) | 5.1 | F4 ship green; local API up (`NEXT_PUBLIC_API_URL`); auth cookie for list proofs |
 | [`batches/F5b.md`](batches/F5b.md) | 5.2 → 5.3 | F5a green; claim best-effort on local cookies until `FRONTEND_URL` bounce |
 
-Blueprint numbers 5.1–5.3. **Run order** is numeric. List before claim/delete so 401→login CTA and empty-list proofs are not skipped. F5 needs **`NEXT_PUBLIC_API_URL` only** — no new FE API keys. Expand F5 only after F4 ship (already true). Leave `StepF6.md`–`StepF7.md` as outlines until F5 ships.
+Blueprint numbers 5.1–5.3. **Run order** is numeric. List before claim/delete so 401→login CTA and empty-list proofs are not skipped. F5 needs **`NEXT_PUBLIC_API_URL` only** — no new FE API keys. Expand F5 only after F4 ship (already true).
+
+## F6 batches (this repo)
+
+| Batch | Sub-steps | Needs |
+|-------|-----------|--------|
+| [`batches/F6a.md`](batches/F6a.md) | 6.2 | F5 ship green; local API up (`NEXT_PUBLIC_API_URL`); a trip with `destination_id` |
+| [`batches/F6b.md`](batches/F6b.md) | 6.1 | F6a green; owner cookies for mutations |
+
+Blueprint numbers 6.1–6.2. **Run order is picker-first (6.2 → 6.1)**, unlike the numeric labels — add-stop must not invent a place list. F6 needs **`NEXT_PUBLIC_API_URL` only** — no new FE API keys (`LLM_*` / `AUTH0_*` / MapTiler secrets stay on the API). Last validation is **Playwright MCP**, not `@playwright/test` (F7.3). Expand F6 only after F5 ship (already true). Leave `StepF7.md` as an outline until F6 ships.
 
 ## This repo
 
