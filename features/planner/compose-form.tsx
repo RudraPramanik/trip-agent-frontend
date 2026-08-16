@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { components } from "@/types/generated/api";
 import { Button } from "@/components/ui/button";
+import { apiHostnameMismatchesPage } from "@/lib/config";
 import {
   parseClarificationQuestion,
   parseItineraryDone,
@@ -25,7 +26,6 @@ import { ProgressPanel } from "./progress-panel";
 type PlanRequest = components["schemas"]["PlanRequest"];
 
 const composeSchema = z.object({
-  destination_id: z.string().min(1),
   raw_input: z.string().refine((value) => value.trim().length >= 1, {
     message: "Describe your trip",
   }),
@@ -50,10 +50,13 @@ function emptyToNullNumber(value: string | undefined): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function toPlanRequest(values: ComposeValues): PlanRequest {
+function toPlanRequest(
+  values: ComposeValues,
+  destinationId: string,
+): PlanRequest {
   const accommodation = values.accommodation_label?.trim() ?? "";
   return {
-    destination_id: values.destination_id,
+    destination_id: destinationId,
     raw_input: values.raw_input.trim(),
     days: emptyToNullNumber(values.days),
     base_lat: emptyToNullNumber(values.base_lat),
@@ -82,7 +85,6 @@ function ComposeForm({ destinationId }: ComposeFormProps) {
   } = useForm<ComposeValues>({
     resolver: zodResolver(composeSchema),
     defaultValues: {
-      destination_id: destinationId,
       raw_input: "",
       days: "",
       base_lat: "",
@@ -157,7 +159,7 @@ function ComposeForm({ destinationId }: ComposeFormProps) {
     setStreamError(null);
     setMissingTripId(false);
     handledTerminalRef.current = null;
-    void generate.start(toPlanRequest(values));
+    void generate.start(toPlanRequest(values, destinationId));
   };
 
   const handleClarificationSubmit = (request: PlanRequest) => {
@@ -167,7 +169,7 @@ function ComposeForm({ destinationId }: ComposeFormProps) {
     void generate.start(request);
   };
 
-  const currentPlanRequest = toPlanRequest(getValues());
+  const currentPlanRequest = toPlanRequest(getValues(), destinationId);
   const clarificationQuestion =
     clarificationNeeded && generate.lastEvent
       ? parseClarificationQuestion(generate.lastEvent.data)
@@ -180,8 +182,12 @@ function ComposeForm({ destinationId }: ComposeFormProps) {
           className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100"
           role="alert"
         >
-          <p className="font-medium">Destination not ready</p>
+          <p className="font-medium">Not enough places yet</p>
           <p className="mt-1">{notReady.message}</p>
+          <p className="mt-1">
+            Prepare this place on home, then try generate again. This is not a
+            login problem.
+          </p>
           <Link
             href={`/?destination=${encodeURIComponent(destinationId)}`}
             className="mt-2 inline-block text-primary underline-offset-4 hover:underline"
@@ -251,10 +257,14 @@ function ComposeForm({ destinationId }: ComposeFormProps) {
 
       <form
         className="flex flex-col gap-3"
-        onSubmit={handleSubmit(onSubmit)}
+        method="post"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleSubmit(onSubmit)(event);
+        }}
         noValidate
       >
-        <input type="hidden" {...register("destination_id")} />
+        <input type="hidden" name="destination_id" value={destinationId} readOnly />
         <p className="text-xs text-zinc-500">
           Destination{" "}
           <span className="break-all font-mono text-zinc-700 dark:text-zinc-300">
@@ -348,6 +358,32 @@ function ComposeForm({ destinationId }: ComposeFormProps) {
   );
 }
 
+function HostMismatchWarning() {
+  const [pageHostname, setPageHostname] = useState<string | undefined>();
+
+  useEffect(() => {
+    setPageHostname(window.location.hostname);
+  }, []);
+
+  if (!apiHostnameMismatchesPage(pageHostname)) {
+    return null;
+  }
+
+  return (
+    <section
+      className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100"
+      role="status"
+    >
+      <p className="font-medium">App and API hosts differ</p>
+      <p className="mt-1">
+        {
+          "Guest generate cookies may not apply to GET /trips/{id}. Open the app and the API on the same host (localhost with localhost, or 127.0.0.1 with 127.0.0.1). This is not a missing frontend LLM key."
+        }
+      </p>
+    </section>
+  );
+}
+
 type PlannerComposeProps = {
   destinationId?: string;
 };
@@ -357,17 +393,25 @@ export function PlannerCompose({ destinationId }: PlannerComposeProps) {
 
   if (!id) {
     return (
-      <section className="flex w-full max-w-lg flex-col gap-2 text-sm">
-        <p className="font-medium">Pick a destination first</p>
-        <p className="text-zinc-600 dark:text-zinc-400">
-          Search on home and choose a place, then come back to compose.
-        </p>
-        <Link href="/" className="text-primary underline-offset-4 hover:underline">
-          Back to search
-        </Link>
-      </section>
+      <div className="flex w-full max-w-lg flex-col gap-3">
+        <HostMismatchWarning />
+        <section className="flex w-full max-w-lg flex-col gap-2 text-sm">
+          <p className="font-medium">Pick a destination first</p>
+          <p className="text-zinc-600 dark:text-zinc-400">
+            Search on home and choose a place, then come back to compose.
+          </p>
+          <Link href="/" className="text-primary underline-offset-4 hover:underline">
+            Back to search
+          </Link>
+        </section>
+      </div>
     );
   }
 
-  return <ComposeForm destinationId={id} />;
+  return (
+    <div className="flex w-full max-w-lg flex-col gap-3">
+      <HostMismatchWarning />
+      <ComposeForm destinationId={id} />
+    </div>
+  );
 }

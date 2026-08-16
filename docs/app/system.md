@@ -24,7 +24,7 @@ Next.js App Router (this repo **is** the app), React, TypeScript strict, Tailwin
 - `lib/api/errors.ts` — `NetworkError` / `ApiError`
 - `lib/api/health.ts` — `GET /api/v1/health`
 - `lib/api/auth.ts` — `getMe` and `logout`
-- `lib/api/destinations.ts` — search + readiness
+- `lib/api/destinations.ts` — search + readiness + prepare (`POST /destinations/{id}/prepare`, omit body; HTTP 202 success envelope is OK)
 - `lib/api/places.ts` — `listPlaces` (`parse: "paginated"` → `PlaceOut`). No trip-edit here. `getPlace` not added (list row is enough)
 - `lib/api/trips.ts` — `getTrip` (`parse: "api"`), `getTripGeojson` (`parse: "raw"`), `listTrips` (`parse: "paginated"`), `claimTrip` (`parse: "api"`), `deleteTrip` (`parse: "empty"` / HTTP 204), `reorderDayStops` PATCH, `addDayStop` POST, `removeDayStop` DELETE (`parse: "api"` / HTTP 200 TripOut, **not** 204), `reoptimizeDay` POST no body (JSON, not SSE)
 - Domain stub (empty): `planner.ts` — generate is **not** envelope JSON; planner generate uses SSE in `lib/sse/planner.ts`
@@ -84,7 +84,11 @@ FastAPI owns cookies (`wandr_session`, `wandr_token`). FE never stores tokens in
 
 ## Destinations
 
-Unchanged from F3: search + readiness; Generate is a `Link` to `/generate?destination=<id>`. Destinations does **not** import trips HTTP.
+Search + readiness + guest Prepare. Search does **not** scrape. Selecting a result writes `?destination=` and does **not** POST prepare.
+
+- `features/destinations/use-destination-readiness.ts` — Query key `["destinations","readiness", id]`; optional poll ~2s while preparing; stop at `place_count >= 10` or ~120s
+- `features/destinations/use-destination-prepare.ts` — mutation `retry: false`; invalidate readiness on 200 `ready`
+- `features/destinations/readiness-card.tsx` — Generate `Link` to `/generate?destination=<id>` only when `place_count` meets the planner floor (default 10). Below the floor: Prepare CTA (no login wall). `sparse` with enough places still generates. Destinations does **not** import trips HTTP or planner SSE.
 
 ## UI shell
 
@@ -131,6 +135,10 @@ Unchanged from F3: search + readiness; Generate is a `Link` to `/generate?destin
 | Edit 422 / `validation_error` | Toast from `details`; no fake itinerary change |
 | Edit 429 / `rate_limit_exceeded` | Backoff toast; brief CTA disable (20/min) |
 | Reoptimize 503 / `llm_unavailable` | Service-unavailable toast; no FE LLM key |
+| Destination below place floor | Prepare + poll; Generate disabled; no login wall |
+| Prepare 202 | Poll readiness ~2s up to ~120s; first sparse poll is not failure |
+| Prepare 429 | Backoff toast; brief Prepare disable |
+| Generate 409 `destination_not_ready` | JSON panel (not SSE); link home to prepare; **no** login CTA |
 
 ## Not built yet
 

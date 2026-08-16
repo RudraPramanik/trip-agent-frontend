@@ -130,6 +130,7 @@ async function parseResponse<T>(res: Response, parse: ParseMode): Promise<T> {
 
   const body = await readJson(res);
 
+  // HTTP 2xx including 202 (prepare kickoff) is success. Do not require status === 200.
   if (!res.ok) {
     throwMappedError(body, res.status);
   }

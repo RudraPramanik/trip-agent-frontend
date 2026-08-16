@@ -1,13 +1,17 @@
-import { getJson } from "@/lib/api/client";
+import { getJson, sendJson } from "@/lib/api/client";
 import type { components, paths } from "@/types/generated/api";
 
 const SEARCH_PATH = "/api/v1/destinations/search" satisfies keyof paths;
 const READINESS_PATH =
   "/api/v1/destinations/{destination_id}/readiness" satisfies keyof paths;
+const PREPARE_PATH =
+  "/api/v1/destinations/{destination_id}/prepare" satisfies keyof paths;
 
 export type DestinationOut = components["schemas"]["DestinationOut"];
 export type DestinationReadinessOut =
   components["schemas"]["DestinationReadinessOut"];
+export type DestinationPrepareOut =
+  components["schemas"]["DestinationPrepareOut"];
 
 export function searchDestinations(
   q: string,
@@ -28,4 +32,19 @@ export function getDestinationReadiness(
     encodeURIComponent(destinationId),
   );
   return getJson<DestinationReadinessOut>(path, { signal, parse: "api" });
+}
+
+export function prepareDestination(
+  destinationId: string,
+  signal?: AbortSignal,
+): Promise<DestinationPrepareOut> {
+  const path = PREPARE_PATH.replace(
+    "{destination_id}",
+    encodeURIComponent(destinationId),
+  );
+  return sendJson<DestinationPrepareOut>(path, {
+    method: "POST",
+    signal,
+    parse: "api",
+  });
 }

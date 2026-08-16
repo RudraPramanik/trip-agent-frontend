@@ -325,7 +325,7 @@ Error code catalog for toasts: **`frontendGuide.md` §16**.
 | Failure | Response |
 |---------|----------|
 | Network / CORS | Typed client error → toast "Can't reach API"; reconnect CTA |
-| `destination_not_ready` 409 | No SSE; show readiness message / gate generate |
+| `destination_not_ready` 409 | No SSE; not login. Call prepare and poll readiness on home; gate Generate on `place_count` vs planner floor (default 10) |
 | `not_found` 404 | Empty / not-found panel for destination, place, or trip |
 | `unauthorized` 401 | Prompt login for Required routes; keep guest flows working |
 | `forbidden` 403 (ownership mismatch, authenticated user) | Ownership / claim failure copy; do not pretend success |
@@ -449,10 +449,10 @@ Error code catalog for toasts: **`frontendGuide.md` §16**.
 #### 2.2 Readiness gate
 - `GET /api/v1/destinations/{id}/readiness` → `tier` / `score` / `place_count` / `enriched_pct` / `indexed_pct` / `message`
 - **No `search_available` field** on the wire — do not invent it
-- 🆕 **Pinned default (was "per product copy" in v1.0):** `ready` → generate enabled, no warning. `limited` → generate enabled, inline warning using `message` from the API. `sparse` → generate **still enabled**, inline warning styled more prominently (e.g. amber vs neutral) — never hard-block. This matches the standing principle that guest generate must not depend on external gates beyond the 409 the backend itself enforces (`PLANNER_ABSOLUTE_MIN_PLACES`). If product later wants a hard block on `sparse`, that's a deliberate reversal of this default, not an ambiguity to resolve per-PR.
+- 🆕 **Pinned default (was "per product copy" in v1.0):** `ready` → generate enabled, no warning. `limited` → generate enabled, inline warning using `message` from the API. `sparse` → generate **still enabled** when `place_count` meets the planner floor (default 10), inline warning styled more prominently (e.g. amber vs neutral) — never hard-block *because of tier*. Gate Generate on **`place_count` vs `PLANNER_ABSOLUTE_MIN_PLACES`**, not on `sparse`. Below the floor: Prepare (`POST /destinations/{id}/prepare`) + poll readiness (~2s, ~120s); first empty poll is expected. 409 `destination_not_ready` is prepare/poll, not login.
 - 🏗️ **Null / empty UI**
-- 🚨 404 destination → not-found
-- ✅ Selecting a destination shows tier + message; generate CTA is enabled at every tier except the backend's own 409 floor
+- 🚨 404 destination → not-found; `place_count` 0 after a new search is expected, not not-found
+- ✅ Selecting a destination shows tier + message; Generate enabled when the place floor is met (any tier); Prepare when below the floor
 
 ---
 
@@ -653,7 +653,7 @@ Error code catalog for toasts: **`frontendGuide.md` §16**.
 | Parse envelopes in one gateway client | Scatter ad-hoc `fetch` + `res.json()` |
 | POST + ReadableStream for planner SSE | Use `EventSource` for generate |
 | Abort streams on navigate-away with a real `AbortController` | Auto-retry full generate silently, or assume "stopped reading" = "server stopped" |
-| Gate generate on readiness tier/message, allowing at every tier | Invent `search_available` on readiness, or hard-block on `sparse` |
+| Gate Generate on `place_count` vs planner floor; warn-and-allow `sparse` when the floor is met | Invent `search_available` on readiness, or hard-block Generate solely because `tier` is `sparse` |
 | Prefer `GET /trips/{id}` after `trip_id` | Treat SSE blob as durable DB |
 | Degrade map to list/points | Blank the whole trip on tile failure |
 | Follow `frontendGuide.md` auth matrix | Call evaluation HTTP or invent routes |

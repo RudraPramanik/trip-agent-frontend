@@ -136,6 +136,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/destinations/{destination_id}/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Prepare Destination
+         * @description Public Overpass seed kickoff. 200 if already at floor; 202 if scrape started.
+         */
+        post: operations["prepare_destination_api_v1_destinations__destination_id__prepare_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/places": {
         parameters: {
             query?: never;
@@ -370,6 +390,17 @@ export interface components {
             /** Message */
             message?: string | null;
         };
+        /** ApiResponse[DestinationPrepareOut] */
+        ApiResponse_DestinationPrepareOut_: {
+            /**
+             * Success
+             * @default true
+             */
+            success: boolean;
+            data: components["schemas"]["DestinationPrepareOut"];
+            /** Message */
+            message?: string | null;
+        };
         /** ApiResponse[DestinationReadinessOut] */
         ApiResponse_DestinationReadinessOut_: {
             /**
@@ -455,6 +486,21 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** DestinationPrepareOut */
+        DestinationPrepareOut: {
+            /**
+             * Destination Id
+             * Format: uuid
+             */
+            destination_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "preparing";
+            /** Place Count */
+            place_count: number;
         };
         /** DestinationReadinessOut */
         DestinationReadinessOut: {
@@ -590,6 +636,11 @@ export interface components {
             base_lng?: number | null;
             /** Accommodation Label */
             accommodation_label?: string | null;
+        };
+        /** PrepareIn */
+        PrepareIn: {
+            /** Radius Km */
+            radius_km?: number | null;
         };
         /** ReorderStopsIn */
         ReorderStopsIn: {
@@ -880,6 +931,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_DestinationReadinessOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prepare_destination_api_v1_destinations__destination_id__prepare_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                destination_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PrepareIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_DestinationPrepareOut_"];
                 };
             };
             /** @description Validation Error */

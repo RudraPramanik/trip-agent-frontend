@@ -1,14 +1,24 @@
 # Issue log — generate timeout and related blockers
 
-**Date:** 2026-08-15  
+**Date:** 2026-08-15 (updated 2026-08-16)  
 **Repo:** `guideagent-frontend` (Next.js). Timeout **fix** belongs in sibling API repo `guideagent`.  
-**Status:** live generate repro is **paused**. Backend Docker was stopped by the operator. Do not retry generate until `http://127.0.0.1:8000` is healthy (same origin as `NEXT_PUBLIC_API_URL`).
+**Status:** **API cold-path generate fixed and live-proved** (see BE change `fix-planner-generate-sse-terminals`). Local Turbopack FATAL on `/generate` (`Next.js package not found`) was FE-toolchain — addressed by `stabilize-generate-dev-turbopack` (`turbopack.root` + query seed). FE companion verify (`verify-generate-trip-after-api-fix`) still needs a browser pass: guest generate → navigate `/trips/{trip_id}` with API at `http://127.0.0.1:8000` matching `NEXT_PUBLIC_API_URL`.
 
 Do not paste LLM, MapTiler, OAuth, or other secret values into this file.
 
 ---
 
-## 1. Generate timeout (primary)
+## 0. Resolution (API) — 2026-08-16
+
+Backend now emits cold-path terminals (`itinerary_done` / `clarification_needed` / `error`) from `PlannerService.generate`, plus `preferences_done` / `phase_changed`. Router safety net: `missing_terminal` if no terminal buffered.
+
+**Live proof (API):** destination `458854b1-4d2a-4d02-8901-e26ed59c0c8b` (132 places, tier `limited`) → SSE `itinerary_done` with `trip_id` `0812c23f-ad08-4baf-837a-8631d21ddaf9` in ~48s wall (graph under default 45s ceiling). No `PLANNER_GENERATION_TIMEOUT_SECONDS` bump required for this run.
+
+**Still for FE:** open `/trips/{trip_id}` from a generate completed **in that same browser session** (do not reuse another session’s trip). Then mark companion OpenSpec tasks done.
+
+---
+
+## 1. Generate timeout (primary — historical)
 
 Guest `POST /planner/generate` on destination `458854b1-4d2a-4d02-8901-e26ed59c0c8b` streamed SSE progress (`tool_done` / batch complete), then ended with terminal SSE `error` code **`generation_timeout`**.
 
@@ -22,9 +32,9 @@ Observed while the API was up (re-check after Docker restart; counts may drift):
 | What the UI showed | “Generation failed” + the error code; no auto-retry |
 | Contract | `docs/frontendGuide.md`: `generation_timeout` means the graph hit `PLANNER_GENERATION_TIMEOUT_SECONDS` |
 
-**Frontend is doing the right thing.** Compose (`features/planner/compose-form.tsx`) already maps SSE `error` to a terminal panel. Planner spec forbids auto-retry. Waiting longer on the same POST, raising the browser `AbortSignal`, adding LLM keys to Next.js, or treating this as an F6 day-edit bug will not produce a trip.
+**Frontend was doing the right thing** for that failure mode. Compose already maps SSE `error` to a terminal panel. Waiting longer on the same POST, raising the browser `AbortSignal`, or adding LLM keys to Next.js will not produce a trip.
 
-**Owner:** API planner graph / LLM path in `guideagent`. Exact timeout seconds and which node expired are API-repo facts to fill in when Docker is up.
+**Owner:** API planner graph / LLM path in `guideagent` — addressed by `fix-planner-generate-sse-terminals`.
 
 **Not the cause:**
 
@@ -52,6 +62,7 @@ Observed while the API was up (re-check after Docker restart; counts may drift):
 |------|--------|
 | `39566c35-417e-4bfc-aea3-8a6647239059` | Same destination, unclaimed, **other session**. Guest GET → **403** guest-mismatch (distinct copy from generic ownership 403; no “log in to fix”). |
 | `797b76ee-db5c-4c7c-a8eb-5dd997746d63` | Same destination, **claimed**. Needs Google login as the **owner**. |
+| `0812c23f-ad08-4baf-837a-8631d21ddaf9` | Live-proof trip from API curl (2026-08-16); **not** your browser session unless generate ran there |
 
 Do **not** inject a `wandr_session` UUID to impersonate ownership. The cookie is not a raw session id; `localhost` vs `127.0.0.1` also splits cookies. Use owner login or a generate that finishes in the **same** browser session.
 
@@ -59,34 +70,29 @@ Do **not** inject a `wandr_session` UUID to impersonate ownership. The cookie is
 
 The Next.js app does not send LLM / MapTiler / OAuth secrets on `POST /planner/generate`. Those belong in the **API** `.env`. If the FE `.env` also contains backend secrets, they are unused here. Do **not** copy them into `NEXT_PUBLIC_*`.
 
+### 2.4 Guest 403 after generate (session, not timeout)
+
+If generate reaches `itinerary_done` and `/trips/{trip_id}` shows **“This trip belongs to a different session”**, that is HTTP **403** from `GET /trips/{id}` (`wandr_session` ≠ `Trip.session_id`). Backend ownership is **correct** — do not relax it, and do not treat this as `generation_timeout` or missing `NEXT_PUBLIC_*` LLM keys.
+
+Usual causes:
+
+- The `trip_id` came from **curl or another browser session** (including live-proof ids above). Generate again in **this** tab and only follow the id that tab navigates to.
+- The app host and `NEXT_PUBLIC_API_URL` host differ (`localhost` vs `127.0.0.1`). Those are different cookie jars. Open both on the same host. Compose and the guest 403 panel show a host-mismatch hint when that is true.
+
 ---
 
-## 3. How to fix generate (API first)
-
-When Docker is back:
+## 3. How to verify generate (FE next)
 
 1. **Health** — API responds at `http://127.0.0.1:8000` (match `NEXT_PUBLIC_API_URL`).
-2. **Readiness** — destination still `ready` / `limited` / `sparse` (all allow generate). HTTP 409 `destination_not_ready` is a different failure.
-3. **API settings** (not FE) — `PLANNER_GENERATION_TIMEOUT_SECONDS`, LLM base URL and keys, NVIDIA/gateway latency.
-4. **Logs** — one generate against `458854b1-…`: which graph node is running when the budget expires; cache vs cold path.
-5. **Distinguish** — `generation_timeout` (SSE terminal error) vs `llm_unavailable` (HTTP 503, no SSE) vs proxy buffering the stream.
-6. **Then** — only after `itinerary_done` with a non-empty `trip_id`, open `/trips/{trip_id}` in **that same browser session**.
-
-Cache-warm of the destination can make a later generate faster. It is an **accelerator**, not the diagnosis. Timeout still means the graph budget is too tight or the LLM path is too slow.
-
-Do **not** “fix” this by lengthening the FE abort. Aborting later leaves the API generating (and billing tokens) after the tab gave up.
-
-Optional later (this repo, **not** this log’s apply): clearer copy that the planner timed out on the API. Still no auto-retry. Do not edit `compose-form.tsx` until the API path is actually healthy and the copy is still unclear.
+2. Open the app on the **same host** as that URL (`127.0.0.1` with `127.0.0.1`, or `localhost` with `localhost`).
+3. Guest compose → generate on a ready destination.
+4. Expect terminal `itinerary_done` with `trip_id` → navigate `/trips/{trip_id}` same session.
+5. If `generation_timeout` returns, check API LLM latency / logs — do not lengthen FE abort as the “fix”.
 
 ---
 
 ## 4. F6 Playwright workarounds
 
-Change `implement-fe-step-f6` tasks **3.1–3.2 are not done**. Picker + add/duplicate/reorder/remove need `GET /trips/{id}` **200** for *this* session.
+Change `implement-fe-step-f6` tasks **3.1–3.2** still need a session-owned trip. Prefer a fresh guest generate after this API fix, then use that `trip_id`.
 
-Until generate succeeds:
-
-1. Log in as the owner and open `http://localhost:3000/trips/797b76ee-db5c-4c7c-a8eb-5dd997746d63`, or
-2. After the API timeout is fixed, finish a guest generate in the same browser, then use that `trip_id`.
-
-Do not mark F6 shipped from this file.
+Do not mark F6 shipped from this file alone.
