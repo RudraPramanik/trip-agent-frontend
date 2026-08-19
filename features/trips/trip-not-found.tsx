@@ -1,12 +1,21 @@
 "use client";
 
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
 export function TripNotFound() {
   return (
-    <section className="w-full max-w-lg rounded-lg border p-4 text-sm">
-      <p className="font-medium">Trip not found</p>
-      <p className="mt-1 text-zinc-600 dark:text-zinc-400">
-        This trip id is missing or unknown. Generate a trip or check the link.
-      </p>
-    </section>
+    <Card className="w-full max-w-lg" role="alert">
+      <CardHeader>
+        <CardTitle>Trip not found</CardTitle>
+        <CardDescription>
+          This trip id is missing or unknown. Generate a trip or check the link.
+        </CardDescription>
+      </CardHeader>
+    </Card>
   );
 }

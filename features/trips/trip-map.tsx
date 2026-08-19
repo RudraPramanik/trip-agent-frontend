@@ -8,6 +8,7 @@ import {
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { getMapStyleUrl } from "@/lib/config";
+import { cn } from "@/lib/utils";
 import type { TripGeoJson } from "@/types/trip-geojson";
 
 /** MapLibre demo tiles — development only when NEXT_PUBLIC_MAP_STYLE_URL is unset. */
@@ -20,6 +21,7 @@ const POINT_LAYER_ID = "trip-points";
 type TripMapProps = {
   geojson: TripGeoJson;
   onCollapse: () => void;
+  className?: string;
 };
 
 function resolveStyleUrl():
@@ -49,7 +51,7 @@ function collectLngLats(geojson: TripGeoJson): [number, number][] {
   return coords;
 }
 
-export function TripMap({ geojson, onCollapse }: TripMapProps) {
+export function TripMap({ geojson, onCollapse, className }: TripMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const onCollapseRef = useRef(onCollapse);
@@ -161,7 +163,10 @@ export function TripMap({ geojson, onCollapse }: TripMapProps) {
       ) : null}
       <div
         ref={containerRef}
-        className="h-72 w-full overflow-hidden rounded-lg border bg-zinc-100 dark:bg-zinc-900"
+        className={cn(
+          "h-72 w-full overflow-hidden rounded-2xl border bg-muted",
+          className,
+        )}
         role="img"
         aria-label="Trip map"
       />

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Geist, Geist_Mono } from "next/font/google";
 import { SessionHeader } from "@/features/auth";
+import { SiteShell } from "@/components/layout";
 import { AppProviders } from "@/providers/app-providers";
 import "./globals.css";
 
@@ -14,9 +15,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const fraunces = Fraunces({
+  variable: "--font-display",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Wandr",
-  description: "Wandr frontend",
+  description: "Plan trips that fit the place — Wandr",
 };
 
 export default function RootLayout({
@@ -27,12 +33,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AppProviders>
-          <SessionHeader />
-          {children}
+          <SiteShell header={<SessionHeader />}>{children}</SiteShell>
         </AppProviders>
       </body>
     </html>

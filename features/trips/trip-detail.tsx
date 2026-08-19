@@ -1,6 +1,7 @@
 "use client";
 
 import type { TripOut, TripPlaceOut } from "@/lib/api/trips";
+import { Badge } from "@/components/ui/badge";
 import { AddStopControl } from "./add-stop-control";
 import { ClaimTripButton } from "./claim-trip-button";
 import { DayEditControls } from "./day-edit-controls";
@@ -55,29 +56,30 @@ export function TripDetail({ trip }: TripDetailProps) {
   const prefs = preferenceEntries(trip.preferences);
 
   return (
-    <section className="flex w-full max-w-2xl flex-col gap-6">
-      <header className="space-y-2">
-        <h1 className="text-xl font-semibold tracking-tight">Trip</h1>
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-          <dt className="text-zinc-500">Status</dt>
-          <dd className="font-medium">{trip.status}</dd>
-          <dt className="text-zinc-500">Days</dt>
-          <dd>{trip.days}</dd>
-        </dl>
+    <section className="flex w-full flex-col gap-6">
+      <header className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="font-heading text-3xl font-semibold tracking-tight">
+            Itinerary
+          </h1>
+          <Badge variant="secondary">{trip.status}</Badge>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {trip.days} day{trip.days === 1 ? "" : "s"}
+        </p>
         {prefs.length > 0 ? (
-          <ul className="flex flex-wrap gap-2 pt-1">
+          <ul className="flex flex-wrap gap-2">
             {prefs.map(({ key, value }) => (
-              <li
-                key={key}
-                className="rounded-md border px-2 py-0.5 text-xs text-zinc-700 dark:text-zinc-300"
-              >
-                <span className="font-medium">{key}</span>
-                {value ? `: ${value}` : null}
+              <li key={key}>
+                <Badge variant="outline">
+                  <span className="font-medium">{key}</span>
+                  {value ? `: ${value}` : null}
+                </Badge>
               </li>
             ))}
           </ul>
         ) : null}
-        <div className="flex flex-wrap items-center gap-2 pt-2">
+        <div className="flex flex-wrap items-center gap-2">
           <ClaimTripButton trip={trip} />
           <DeleteTripControl tripId={trip.id} navigateAway />
         </div>
@@ -86,38 +88,45 @@ export function TripDetail({ trip }: TripDetailProps) {
       {dayNumbers.length === 0 ? (
         <div className="space-y-3">
           <DayNarrative tripId={trip.id} />
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="text-sm text-muted-foreground">
             No stops on this trip yet.
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-6">
           {dayNumbers.map((dayNumber) => {
             const dayPlaces = byDay.get(dayNumber) ?? [];
             return (
-              <section key={dayNumber} className="space-y-2">
-                <h2 className="text-sm font-semibold tracking-tight">
+              <section
+                key={dayNumber}
+                className="relative space-y-3 border-l-2 border-primary/20 pl-5"
+              >
+                <span className="absolute top-1.5 -left-[7px] size-3 rounded-full bg-primary" />
+                <h2 className="font-heading text-lg font-semibold tracking-tight">
                   Day {dayNumber}
                 </h2>
                 <DayNarrative tripId={trip.id} dayNumber={dayNumber} />
                 {dayPlaces.length === 0 ? (
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="text-sm text-muted-foreground">
                     No stops on this day yet.
                   </p>
                 ) : (
-                  <ol className="list-decimal space-y-2 pl-5 text-sm">
-                    {dayPlaces.map((place) => (
-                      <li key={place.id} className="pl-1">
-                        <span className="font-medium">
-                          {place.name?.trim() || "Stop"}
-                        </span>
+                  <ol className="space-y-3">
+                    {dayPlaces.map((place, index) => (
+                      <li
+                        key={place.id}
+                        className="rounded-xl border bg-card p-3 text-sm shadow-sm"
+                      >
+                        <p className="font-medium">
+                          {index + 1}. {place.name?.trim() || "Stop"}
+                        </p>
                         {place.suggested_start_time ? (
-                          <span className="ml-2 text-zinc-500">
+                          <p className="mt-0.5 text-muted-foreground">
                             {place.suggested_start_time}
-                          </span>
+                          </p>
                         ) : null}
                         {place.arrival_note ? (
-                          <p className="mt-0.5 text-zinc-600 dark:text-zinc-400">
+                          <p className="mt-1 text-muted-foreground">
                             {place.arrival_note}
                           </p>
                         ) : null}

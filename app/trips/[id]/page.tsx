@@ -1,4 +1,5 @@
 import { TripPage } from "@/features/trips";
+import { PageFrame } from "@/components/layout";
 
 type TripRoutePageProps = {
   params: Promise<{ id: string }>;
@@ -8,8 +9,8 @@ export default async function TripRoutePage({ params }: TripRoutePageProps) {
   const { id } = await params;
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10">
+    <PageFrame className="gap-4 pb-16">
       <TripPage tripId={id} />
-    </main>
+    </PageFrame>
   );
 }

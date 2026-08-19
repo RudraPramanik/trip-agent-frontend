@@ -3,6 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   isPrepareRateLimited,
@@ -65,39 +74,44 @@ export function ReadinessCard({ destinationId }: ReadinessCardProps) {
 
   if (readiness.isNotFound) {
     return (
-      <section className="w-full max-w-lg rounded-lg border p-4 text-sm">
-        <p className="font-medium">Destination not found</p>
-        <p className="mt-1 text-zinc-600 dark:text-zinc-400">
-          This destination id is missing or unknown. Search again and pick a
-          result.
-        </p>
-      </section>
+      <Card className="w-full max-w-xl" role="alert">
+        <CardHeader>
+          <CardTitle>Destination not found</CardTitle>
+          <CardDescription>
+            This destination id is missing or unknown. Search again and pick a
+            result.
+          </CardDescription>
+        </CardHeader>
+      </Card>
     );
   }
 
   if (readiness.isError && readiness.data === undefined) {
     return (
-      <section className="flex w-full max-w-lg flex-col gap-2 text-sm">
-        <p className="text-zinc-600 dark:text-zinc-400">
-          Couldn’t load readiness. Try again.
-        </p>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            void readiness.refetch();
-          }}
-        >
-          Retry
-        </Button>
-      </section>
+      <Card className="w-full max-w-xl">
+        <CardHeader>
+          <CardTitle>Couldn’t load readiness</CardTitle>
+          <CardDescription>Try again.</CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              void readiness.refetch();
+            }}
+          >
+            Retry
+          </Button>
+        </CardFooter>
+      </Card>
     );
   }
 
   if (readiness.isFetching && readiness.data === undefined) {
     return (
-      <p className="w-full max-w-lg text-sm text-zinc-500">
+      <p className="w-full max-w-xl text-sm text-muted-foreground">
         Checking readiness…
       </p>
     );
@@ -113,7 +127,7 @@ export function ReadinessCard({ destinationId }: ReadinessCardProps) {
   const warningClass =
     tier === "sparse"
       ? "rounded-md bg-amber-100 px-3 py-2 text-sm text-amber-950 dark:bg-amber-950/40 dark:text-amber-100"
-      : "text-sm text-zinc-600 dark:text-zinc-400";
+      : "text-sm text-muted-foreground";
 
   async function handlePrepare() {
     try {
@@ -135,43 +149,49 @@ export function ReadinessCard({ destinationId }: ReadinessCardProps) {
   }
 
   return (
-    <section className="flex w-full max-w-lg flex-col gap-3 rounded-lg border p-4">
-      <h2 className="text-sm font-semibold tracking-tight">Readiness</h2>
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-        <dt className="text-zinc-500">Tier</dt>
-        <dd className="font-medium">{tier}</dd>
-        <dt className="text-zinc-500">Score</dt>
-        <dd>{score}</dd>
-        <dt className="text-zinc-500">Places</dt>
-        <dd>{place_count}</dd>
-        <dt className="text-zinc-500">Enriched</dt>
-        <dd>{formatPct(enriched_pct)}</dd>
-        <dt className="text-zinc-500">Indexed</dt>
-        <dd>{formatPct(indexed_pct)}</dd>
-      </dl>
-      {tier !== "ready" && message && atFloor ? (
-        <p className={warningClass}>{message}</p>
-      ) : null}
-      {!atFloor && !preparing && !pollTimedOut ? (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          This place has few or no cataloged points yet. That’s expected for a
-          new search — prepare it to load nearby places. Generate stays off
-          until there are at least {PLANNER_PLACE_FLOOR}.
-        </p>
-      ) : null}
-      {preparing ? (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Preparing this place. Nearby points can take a minute to appear —
-          the first empty update is normal.
-        </p>
-      ) : null}
-      {pollTimedOut && !atFloor ? (
-        <p className="rounded-md bg-amber-100 px-3 py-2 text-sm text-amber-950 dark:bg-amber-950/40 dark:text-amber-100">
-          Not enough places yet to generate a trip. Try prepare again, or pick
-          another destination. This is not a login problem.
-        </p>
-      ) : null}
-      <div className="flex flex-col gap-1.5">
+    <Card className="w-full max-w-xl">
+      <CardHeader>
+        <div className="flex flex-wrap items-center gap-2">
+          <CardTitle>Ready to plan?</CardTitle>
+          <Badge variant={tier === "ready" ? "default" : "secondary"}>
+            {tier}
+          </Badge>
+        </div>
+        <CardDescription>
+          {place_count} places in catalog · score {score}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+          <dt className="text-muted-foreground">Enriched</dt>
+          <dd>{formatPct(enriched_pct)}</dd>
+          <dt className="text-muted-foreground">Indexed</dt>
+          <dd>{formatPct(indexed_pct)}</dd>
+        </dl>
+        {tier !== "ready" && message && atFloor ? (
+          <p className={warningClass}>{message}</p>
+        ) : null}
+        {!atFloor && !preparing && !pollTimedOut ? (
+          <p className="text-sm text-muted-foreground">
+            This place has few or no cataloged points yet. That’s expected for a
+            new search — prepare it to load nearby places. Generate stays off
+            until there are at least {PLANNER_PLACE_FLOOR}.
+          </p>
+        ) : null}
+        {preparing ? (
+          <p className="text-sm text-muted-foreground">
+            Preparing this place. Nearby points can take a minute to appear —
+            the first empty update is normal.
+          </p>
+        ) : null}
+        {pollTimedOut && !atFloor ? (
+          <p className="rounded-md bg-amber-100 px-3 py-2 text-sm text-amber-950 dark:bg-amber-950/40 dark:text-amber-100">
+            Not enough places yet to generate a trip. Try prepare again, or pick
+            another destination. This is not a login problem.
+          </p>
+        ) : null}
+      </CardContent>
+      <CardFooter className="flex flex-col items-stretch gap-1.5">
         {atFloor ? (
           <>
             <Link
@@ -180,7 +200,7 @@ export function ReadinessCard({ destinationId }: ReadinessCardProps) {
             >
               Generate
             </Link>
-            <p className="text-xs text-zinc-500">Compose your trip next.</p>
+            <p className="text-xs text-muted-foreground">Compose your trip next.</p>
           </>
         ) : (
           <>
@@ -193,12 +213,12 @@ export function ReadinessCard({ destinationId }: ReadinessCardProps) {
             >
               {preparing || prepare.isPending ? "Preparing…" : "Prepare"}
             </Button>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted-foreground">
               Loads nearby places for this destination. No login needed.
             </p>
           </>
         )}
-      </div>
-    </section>
+      </CardFooter>
+    </Card>
   );
 }

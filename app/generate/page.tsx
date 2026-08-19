@@ -1,4 +1,5 @@
 import { PlannerCompose } from "@/features/planner";
+import { PageFrame } from "@/components/layout";
 
 function firstQueryValue(
   value: string | string[] | undefined,
@@ -26,9 +27,14 @@ export default async function GeneratePage({
   const destinationId = resolveDestinationId(params);
 
   return (
-    <main className="flex flex-1 flex-col items-center gap-4 p-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Compose</h1>
+    <PageFrame width="narrow" className="gap-6 pb-16">
+      <div>
+        <p className="text-sm font-medium text-muted-foreground">Compose</p>
+        <h1 className="font-heading text-3xl font-semibold tracking-tight">
+          Tell us the trip
+        </h1>
+      </div>
       <PlannerCompose destinationId={destinationId} />
-    </main>
+    </PageFrame>
   );
 }

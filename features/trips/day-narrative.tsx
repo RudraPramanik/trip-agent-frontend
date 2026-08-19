@@ -19,12 +19,12 @@ function NarrativeBlock({ day }: { day: NarrativeDay }) {
   return (
     <div className="space-y-1 text-sm">
       {title ? (
-        <div className="font-medium [&_p]:m-0">
+        <div className="font-heading font-medium [&_p]:m-0">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{title}</ReactMarkdown>
         </div>
       ) : null}
       {narrative ? (
-        <div className="space-y-2 text-zinc-700 dark:text-zinc-300 [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-1 [&_ul]:list-disc [&_ul]:pl-5">
+        <div className="space-y-2 text-muted-foreground [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-1 [&_ul]:list-disc [&_ul]:pl-5">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{narrative}</ReactMarkdown>
         </div>
       ) : null}

@@ -1,8 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import type { PlaceOut } from "@/lib/api/places";
 import { usePlaces } from "./use-places";
+import { categoryArt } from "@/components/category-art";
 
 type PlacesPickerProps = {
   destinationId: string;
@@ -20,7 +22,7 @@ export function PlacesPicker({
 
   if (!places.enabled) {
     return (
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="text-sm text-muted-foreground">
         No destination on this trip, so the place catalog can’t load.
       </p>
     );
@@ -28,7 +30,7 @@ export function PlacesPicker({
 
   if (places.isNotFound) {
     return (
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="text-sm text-muted-foreground">
         No place catalog for this destination.
       </p>
     );
@@ -37,9 +39,7 @@ export function PlacesPicker({
   if (places.isError) {
     return (
       <div className="flex flex-col gap-2 text-sm">
-        <p className="text-zinc-600 dark:text-zinc-400">
-          Couldn’t load places. Try again.
-        </p>
+        <p className="text-muted-foreground">Couldn’t load places. Try again.</p>
         <Button
           type="button"
           size="sm"
@@ -55,26 +55,38 @@ export function PlacesPicker({
   }
 
   if (places.isPending && places.data === undefined) {
-    return <p className="text-sm text-zinc-500">Loading places…</p>;
+    return <p className="text-sm text-muted-foreground">Loading places…</p>;
   }
 
   if (places.items.length === 0) {
     return (
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="text-sm text-muted-foreground">
         No places in the catalog for this destination.
       </p>
     );
   }
 
   return (
-    <ul className="divide-y rounded-lg border">
+    <ul className="grid gap-2 sm:grid-cols-2">
       {places.items.map((place) => {
-        const label = (
+        const art = categoryArt(place.category);
+        const Icon = art.icon;
+        const body = (
           <>
-            <span className="font-medium">{place.name}</span>
-            {place.category ? (
-              <span className="text-xs text-zinc-500">{place.category}</span>
-            ) : null}
+            <span
+              className={`flex size-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${art.from} ${art.to} text-white`}
+              aria-hidden
+            >
+              <Icon className="size-4" />
+            </span>
+            <span className="flex min-w-0 flex-col gap-0.5">
+              <span className="font-medium">{place.name}</span>
+              {place.category ? (
+                <Badge variant="outline" className="w-fit">
+                  {place.category}
+                </Badge>
+              ) : null}
+            </span>
           </>
         );
 
@@ -84,12 +96,12 @@ export function PlacesPicker({
               <button
                 type="button"
                 disabled={disabled}
-                className="flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left text-sm hover:bg-muted disabled:opacity-50"
+                className="flex w-full items-start gap-3 rounded-xl border bg-card p-3 text-left text-sm shadow-sm hover:bg-muted/60 disabled:opacity-50"
                 onClick={() => {
                   onSelect(place);
                 }}
               >
-                {label}
+                {body}
               </button>
             </li>
           );
@@ -98,9 +110,9 @@ export function PlacesPicker({
         return (
           <li
             key={place.id}
-            className="flex flex-col gap-0.5 px-3 py-2 text-sm"
+            className="flex items-start gap-3 rounded-xl border bg-card p-3 text-sm shadow-sm"
           >
-            {label}
+            {body}
           </li>
         );
       })}

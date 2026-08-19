@@ -1,12 +1,14 @@
-# Wandr FE — system (F6 as-built)
+# Wandr FE — system (product UI + Explore Nearby)
 
-Snapshot of what exists after F6. Product SSOT: [`docs/blueprint.md`](../blueprint.md). Guardrails: [`AGENTS.md`](../../AGENTS.md). Wire: [`docs/frontendGuide.md`](../frontendGuide.md).
+Snapshot after the `modern-product-ui-and-explore-nearby` apply. Product SSOT: [`docs/blueprint.md`](../blueprint.md). Visual SSOT: [`docs/feature_ui.md`](../feature_ui.md). Guardrails: [`AGENTS.md`](../../AGENTS.md). Wire: [`docs/frontendGuide.md`](../frontendGuide.md).
+
+This is not a second bible. Update it when a phase ships.
 
 This is not a second bible. Update it when a phase ships.
 
 ## Stack
 
-Next.js App Router (this repo **is** the app), React, TypeScript strict, Tailwind v4, shadcn Button, TanStack Query, Sonner, react-hook-form, Zod, `@hookform/resolvers`, Zustand (narrative Option A), **react-markdown** + **remark-gfm**, **maplibre-gl**. npm, Node `>=20`. No NextAuth / Better Auth, no `rehype-raw`, no Vitest/`@playwright/test` in this phase. **No new packages in F6.** Last-step browser proof uses Playwright MCP, not `@playwright/test`.
+Next.js App Router (this repo **is** the app), React, TypeScript strict, Tailwind v4, shadcn (Button, Card, Input, Textarea, Badge, Tabs, Sheet, Skeleton, Separator), TanStack Query, Sonner, react-hook-form, Zod, `@hookform/resolvers`, Zustand (narrative Option A), **react-markdown** + **remark-gfm**, **maplibre-gl**, `next/font` Geist + Fraunces. npm, Node `>=20`. No NextAuth / Better Auth, no `rehype-raw`, no Vitest/`@playwright/test` in this phase. **No `lib/api/explore.ts`.** Last-step browser proof uses Playwright MCP, not `@playwright/test`.
 
 ## Env
 
@@ -93,12 +95,26 @@ Search + readiness + guest Prepare. Search does **not** scrape. Selecting a resu
 ## UI shell
 
 - `providers/app-providers.tsx` — QueryClient + Sonner
-- `app/layout.tsx` — `AppProviders` wraps `SessionHeader` then `{children}`
-- `app/page.tsx` — home: destinations only
+- `components/layout/` — `SiteShell` (sticky header slot) + `PageFrame` (content width)
+- `app/layout.tsx` — `AppProviders` → `SiteShell` + `SessionHeader` → `{children}`; **no** required-auth wrapper
+- `session-header.tsx` — brand, Search (`Link` to `/#destination-search`), Explore (`/explore`), Trips (`/trips`), chip, Login/Logout. Fetch-free of destinations/places/trips/planner HTTP; Search is not a typeahead
+- `app/page.tsx` — home hero + destinations barrel only
+- `app/explore/page.tsx` — Server Component; mounts explore barrel only
+- Travel tokens in `app/globals.css` (warm paper + forest primary). Display font: Fraunces via `--font-display`
+
+## Explore Nearby
+
+Frontend-only discovery at `/explore`. Guest-unblocked. **No nearby/radius HTTP.**
+
+- `features/explore/` — `ExplorePage`, live feed via places **barrel** (`usePlaces`), preview mock (`preview:` ids), geolocation only after “Use my location”
+- Live: `?destination=` → `GET /api/v1/places?destination_id=` (existing catalog). Category chips filter `PlaceOut.category`. CTA uses real `destination_id` to home/generate. No day-edit from explore
+- Preview: GPS without destination → labeled **Preview** cards; CTA is `Link` to `/`; mock ids never sent as Wandr UUIDs. Denied/unavailable → dedicated panel + destination search still available
+- Photos: category gradient illustrations with honest copy (not venue photography). `PlaceOut.summary` as text, not HTML
+- MUST NOT import `lib/api/places` or `lib/api/destinations` from explore; compose barrels only
 
 ## Feature folders
 
-`features/auth`, `features/destinations`, `features/planner`, `features/trips`, and `features/places` are filled.
+`features/auth`, `features/destinations`, `features/planner`, `features/trips`, `features/places`, and `features/explore` are filled.
 
 ## Failure modes (F4 + F5 + F6)
 
@@ -139,7 +155,11 @@ Search + readiness + guest Prepare. Search does **not** scrape. Selecting a resu
 | Prepare 202 | Poll readiness ~2s up to ~120s; first sparse poll is not failure |
 | Prepare 429 | Backoff toast; brief Prepare disable |
 | Generate 409 `destination_not_ready` | JSON panel (not SSE); link home to prepare; **no** login CTA |
+| Explore without destination | Search + optional GPS; no invented nearby HTTP |
+| Explore GPS denied / unavailable | Dedicated panel; destination search remains |
+| Explore preview cards | Visible Preview badge; ids not used as `destination_id` / `place_id` |
+| Explore live empty / 404 / 5xx | Empty or retry in the feed; no invented places |
 
 ## Not built yet
 
-Vitest / `@playwright/test` CI smoke, a11y, and responsive hardening (F7). No `@dnd-kit`. No optimistic UI.
+Vitest / `@playwright/test` CI, Sentry (F7). Nearby/radius API (backend). Add-to-trip from Explore. Chat planner. No `@dnd-kit`. No optimistic UI.

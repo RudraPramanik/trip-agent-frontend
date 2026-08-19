@@ -8,6 +8,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { components } from "@/types/generated/api";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { apiHostnameMismatchesPage } from "@/lib/config";
 import {
   parseClarificationQuestion,
@@ -36,9 +45,6 @@ const composeSchema = z.object({
 });
 
 type ComposeValues = z.infer<typeof composeSchema>;
-
-const inputClassName =
-  "h-9 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 const RATE_LIMIT_DISABLE_MS = 2000;
 
@@ -176,10 +182,10 @@ function ComposeForm({ destinationId }: ComposeFormProps) {
       : "";
 
   return (
-    <div className="flex w-full max-w-lg flex-col gap-3">
+    <div className="flex w-full max-w-xl flex-col gap-4">
       {notReady ? (
         <section
-          className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100"
+          className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100"
           role="alert"
         >
           <p className="font-medium">Not enough places yet</p>
@@ -199,40 +205,38 @@ function ComposeForm({ destinationId }: ComposeFormProps) {
 
       {genericError ? (
         <section
-          className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm"
+          className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm"
           role="alert"
         >
           <p className="font-medium">Couldn&apos;t start generate</p>
-          <p className="mt-1 text-zinc-600 dark:text-zinc-400">
-            {genericError.message}
-          </p>
+          <p className="mt-1 text-muted-foreground">{genericError.message}</p>
         </section>
       ) : null}
 
       {streamError ? (
         <section
-          className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm"
+          className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm"
           role="alert"
         >
           <p className="font-medium">Generation failed</p>
-          <p className="mt-1 text-zinc-600 dark:text-zinc-400">{streamError}</p>
+          <p className="mt-1 text-muted-foreground">{streamError}</p>
         </section>
       ) : null}
 
       {missingTripId ? (
         <section
-          className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm"
+          className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm"
           role="alert"
         >
           <p className="font-medium">No trip id</p>
-          <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+          <p className="mt-1 text-muted-foreground">
             The planner finished without a trip id. Try generating again.
           </p>
         </section>
       ) : null}
 
       {generate.isStreaming ? (
-        <section className="flex items-center justify-between gap-3 rounded-lg border p-4 text-sm">
+        <section className="flex items-center justify-between gap-3 rounded-2xl border bg-card p-4 text-sm shadow-sm">
           <p>Generating…</p>
           <Button type="button" size="sm" variant="outline" onClick={generate.cancel}>
             Cancel
@@ -255,105 +259,121 @@ function ComposeForm({ destinationId }: ComposeFormProps) {
         />
       ) : null}
 
-      <form
-        className="flex flex-col gap-3"
-        method="post"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void handleSubmit(onSubmit)(event);
-        }}
-        noValidate
-      >
-        <input type="hidden" name="destination_id" value={destinationId} readOnly />
-        <p className="text-xs text-zinc-500">
-          Destination{" "}
-          <span className="break-all font-mono text-zinc-700 dark:text-zinc-300">
-            {destinationId}
-          </span>
-        </p>
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-heading text-xl">Compose your trip</CardTitle>
+          <CardDescription>
+            Destination{" "}
+            <span className="break-all font-mono text-xs">
+              {destinationId}
+            </span>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form
+            className="flex flex-col gap-4"
+            method="post"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void handleSubmit(onSubmit)(event);
+            }}
+            noValidate
+          >
+            <input type="hidden" name="destination_id" value={destinationId} readOnly />
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="raw_input" className="text-sm font-medium">
-            What kind of trip?
-          </label>
-          <textarea
-            id="raw_input"
-            rows={4}
-            className={`${inputClassName} h-auto py-2`}
-            placeholder="A few days in the hills, food and walking…"
-            disabled={submitDisabled}
-            {...register("raw_input")}
-          />
-          {errors.raw_input ? (
-            <p className="text-xs text-destructive" role="alert">
-              {errors.raw_input.message}
-            </p>
-          ) : null}
-        </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="raw_input" className="text-sm font-medium">
+                What kind of trip?
+              </label>
+              <Textarea
+                id="raw_input"
+                rows={5}
+                className="min-h-28 text-base"
+                placeholder="A few days in the hills, food and walking…"
+                disabled={submitDisabled}
+                {...register("raw_input")}
+              />
+              {errors.raw_input ? (
+                <p className="text-xs text-destructive" role="alert">
+                  {errors.raw_input.message}
+                </p>
+              ) : null}
+            </div>
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="days" className="text-sm font-medium">
-            Days <span className="font-normal text-zinc-500">(optional)</span>
-          </label>
-          <input
-            id="days"
-            type="text"
-            inputMode="numeric"
-            className={inputClassName}
-            disabled={submitDisabled}
-            {...register("days")}
-          />
-        </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="days" className="text-sm font-medium">
+                  Days{" "}
+                  <span className="font-normal text-muted-foreground">(optional)</span>
+                </label>
+                <Input
+                  id="days"
+                  type="text"
+                  inputMode="numeric"
+                  className="h-10"
+                  disabled={submitDisabled}
+                  {...register("days")}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="accommodation_label" className="text-sm font-medium">
+                  Stay{" "}
+                  <span className="font-normal text-muted-foreground">(optional)</span>
+                </label>
+                <Input
+                  id="accommodation_label"
+                  type="text"
+                  className="h-10"
+                  placeholder="Hotel or neighborhood"
+                  disabled={submitDisabled}
+                  {...register("accommodation_label")}
+                />
+              </div>
+            </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="base_lat" className="text-sm font-medium">
-              Base lat{" "}
-              <span className="font-normal text-zinc-500">(optional)</span>
-            </label>
-            <input
-              id="base_lat"
-              type="text"
-              inputMode="decimal"
-              className={inputClassName}
-              disabled={submitDisabled}
-              {...register("base_lat")}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="base_lng" className="text-sm font-medium">
-              Base lng{" "}
-              <span className="font-normal text-zinc-500">(optional)</span>
-            </label>
-            <input
-              id="base_lng"
-              type="text"
-              inputMode="decimal"
-              className={inputClassName}
-              disabled={submitDisabled}
-              {...register("base_lng")}
-            />
-          </div>
-        </div>
+            <details className="rounded-xl border bg-muted/30 px-3 py-2">
+              <summary className="cursor-pointer text-sm font-medium">
+                Advanced: base coordinates
+              </summary>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Optional map pin for the planner. Leave blank if you are not sure.
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="base_lat" className="text-sm font-medium">
+                    Base lat
+                  </label>
+                  <Input
+                    id="base_lat"
+                    type="text"
+                    inputMode="decimal"
+                    className="h-10"
+                    disabled={submitDisabled}
+                    {...register("base_lat")}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="base_lng" className="text-sm font-medium">
+                    Base lng
+                  </label>
+                  <Input
+                    id="base_lng"
+                    type="text"
+                    inputMode="decimal"
+                    className="h-10"
+                    disabled={submitDisabled}
+                    {...register("base_lng")}
+                  />
+                </div>
+              </div>
+            </details>
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="accommodation_label" className="text-sm font-medium">
-            Stay <span className="font-normal text-zinc-500">(optional)</span>
-          </label>
-          <input
-            id="accommodation_label"
-            type="text"
-            className={inputClassName}
-            placeholder="Hotel or neighborhood"
-            disabled={submitDisabled}
-            {...register("accommodation_label")}
-          />
-        </div>
-
-        <Button type="submit" disabled={submitDisabled}>
-          {generate.isStreaming ? "Generating…" : "Generate"}
-        </Button>
-      </form>
+            <Button type="submit" className="h-10" disabled={submitDisabled}>
+              {generate.isStreaming ? "Generating…" : "Generate"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -371,7 +391,7 @@ function HostMismatchWarning() {
 
   return (
     <section
-      className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100"
+      className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100"
       role="status"
     >
       <p className="font-medium">App and API hosts differ</p>
@@ -393,23 +413,27 @@ export function PlannerCompose({ destinationId }: PlannerComposeProps) {
 
   if (!id) {
     return (
-      <div className="flex w-full max-w-lg flex-col gap-3">
+      <div className="flex w-full max-w-xl flex-col gap-3">
         <HostMismatchWarning />
-        <section className="flex w-full max-w-lg flex-col gap-2 text-sm">
-          <p className="font-medium">Pick a destination first</p>
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Search on home and choose a place, then come back to compose.
-          </p>
-          <Link href="/" className="text-primary underline-offset-4 hover:underline">
-            Back to search
-          </Link>
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle>Pick a destination first</CardTitle>
+            <CardDescription>
+              Search on home and choose a place, then come back to compose.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/" className="text-primary underline-offset-4 hover:underline">
+              Back to search
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="flex w-full max-w-lg flex-col gap-3">
+    <div className="flex w-full max-w-xl flex-col gap-3">
       <HostMismatchWarning />
       <ComposeForm destinationId={id} />
     </div>

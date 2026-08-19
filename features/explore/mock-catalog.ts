@@ -1,0 +1,156 @@
+export type PreviewPlace = {
+  id: string;
+  name: string;
+  category: string;
+  summary: string;
+  lat: number;
+  lng: number;
+};
+
+/** Labeled preview only. Ids MUST stay namespaced and never used as Wandr UUIDs. */
+export const PREVIEW_PLACES: PreviewPlace[] = [
+  {
+    id: "preview:cafe-terrace",
+    name: "Terrace cafe",
+    category: "cafe",
+    summary: "A quiet pour-over spot with a hillside seat.",
+    lat: 27.041,
+    lng: 88.263,
+  },
+  {
+    id: "preview:park-ridge",
+    name: "Ridge walking park",
+    category: "park",
+    summary: "Shaded loop with benches and a small playground.",
+    lat: 27.048,
+    lng: 88.266,
+  },
+  {
+    id: "preview:viewpoint-dawn",
+    name: "Dawn viewpoint",
+    category: "viewpoint",
+    summary: "East-facing lookout for first light over the valley.",
+    lat: 27.055,
+    lng: 88.271,
+  },
+  {
+    id: "preview:cafe-lane",
+    name: "Lane bakery cafe",
+    category: "cafe",
+    summary: "Pastries, filter coffee, and a street-side counter.",
+    lat: 27.038,
+    lng: 88.258,
+  },
+  {
+    id: "preview:park-lake",
+    name: "Lakeside park",
+    category: "park",
+    summary: "Flat path around the water; good for an easy hour.",
+    lat: 27.033,
+    lng: 88.27,
+  },
+  {
+    id: "preview:viewpoint-west",
+    name: "West ridge viewpoint",
+    category: "viewpoint",
+    summary: "Sunset rock with a wide drop to the tea gardens.",
+    lat: 27.05,
+    lng: 88.25,
+  },
+  {
+    id: "preview:place-market",
+    name: "Covered market",
+    category: "marketplace",
+    summary: "Spices, fruit, and a few snack stalls under one roof.",
+    lat: 27.042,
+    lng: 88.267,
+  },
+  {
+    id: "preview:cafe-book",
+    name: "Bookshop cafe",
+    category: "cafe",
+    summary: "Second-hand shelves and a two-table espresso bar.",
+    lat: 27.046,
+    lng: 88.261,
+  },
+  {
+    id: "preview:park-botanical",
+    name: "Botanical pocket park",
+    category: "park",
+    summary: "Labeled trees and a short interpretive loop.",
+    lat: 27.036,
+    lng: 88.255,
+  },
+  {
+    id: "preview:viewpoint-monastery",
+    name: "Monastery viewpoint",
+    category: "viewpoint",
+    summary: "Steps up to a courtyard with a valley panorama.",
+    lat: 27.058,
+    lng: 88.259,
+  },
+  {
+    id: "preview:place-temple",
+    name: "Hill temple precinct",
+    category: "temple",
+    summary: "Courtyard, bells, and a quiet side garden.",
+    lat: 27.044,
+    lng: 88.274,
+  },
+  {
+    id: "preview:cafe-night",
+    name: "Night stall cafe",
+    category: "cafe",
+    summary: "Late tea and momos on a well-lit corner.",
+    lat: 27.04,
+    lng: 88.26,
+  },
+  {
+    id: "preview:park-promenade",
+    name: "Mall promenade park",
+    category: "park",
+    summary: "Linear green with street musicians on weekends.",
+    lat: 27.0415,
+    lng: 88.2665,
+  },
+  {
+    id: "preview:viewpoint-secret",
+    name: "Side-trail viewpoint",
+    category: "viewpoint",
+    summary: "Short unsigned trail to a quieter ledge.",
+    lat: 27.052,
+    lng: 88.248,
+  },
+  {
+    id: "preview:place-museum",
+    name: "Town museum",
+    category: "museum",
+    summary: "One-floor local history with a tea-garden gallery.",
+    lat: 27.039,
+    lng: 88.265,
+  },
+  {
+    id: "preview:cafe-garden",
+    name: "Garden courtyard cafe",
+    category: "cafe",
+    summary: "Outdoor tables under camellia and a small kiln.",
+    lat: 27.047,
+    lng: 88.257,
+  },
+  {
+    id: "preview:park-fort",
+    name: "Fort lawn park",
+    category: "park",
+    summary: "Open grass inside old walls; kites on windy days.",
+    lat: 27.049,
+    lng: 88.272,
+  },
+  {
+    id: "preview:viewpoint-train",
+    name: "Railway curve viewpoint",
+    category: "viewpoint",
+    summary: "Watch the toy train switchback from a safe railing.",
+    lat: 27.035,
+    lng: 88.252,
+  },
+];

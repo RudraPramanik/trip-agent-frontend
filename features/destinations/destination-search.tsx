@@ -7,7 +7,14 @@ import { useDestinationSearch } from "./use-destination-search";
 
 const RATE_LIMIT_DISABLE_MS = 2000;
 
-export function DestinationSearch() {
+type DestinationSearchProps = {
+  /** Pathname that receives `?destination=` after a hit is selected. */
+  resultPath?: string;
+};
+
+export function DestinationSearch({
+  resultPath = "/",
+}: DestinationSearchProps) {
   const [q, setQ] = useState("");
   const search = useDestinationSearch(q);
   const [rateLimited, setRateLimited] = useState(false);
@@ -28,7 +35,7 @@ export function DestinationSearch() {
   return (
     <section
       id="destination-search"
-      className="flex w-full max-w-lg flex-col gap-3"
+      className="flex w-full max-w-xl flex-col gap-3"
     >
       <SearchField onQueryChange={onQueryChange} disabled={rateLimited} />
       <SearchResults
@@ -36,6 +43,7 @@ export function DestinationSearch() {
         data={search.data}
         isFetching={search.isFetching}
         isError={search.isError}
+        resultPath={resultPath}
         onRetry={() => {
           void search.refetch();
         }}

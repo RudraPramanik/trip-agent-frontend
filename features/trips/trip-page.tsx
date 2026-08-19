@@ -45,7 +45,7 @@ export function TripPage({ tripId }: TripPageProps) {
   if (trip.isError) {
     return (
       <section className="flex w-full max-w-lg flex-col gap-2 text-sm">
-        <p className="text-zinc-600 dark:text-zinc-400">
+        <p className="text-muted-foreground">
           Couldn’t load this trip. Try again.
         </p>
         <Button
@@ -64,7 +64,7 @@ export function TripPage({ tripId }: TripPageProps) {
 
   if (trip.isPending && trip.data === undefined) {
     return (
-      <p className="w-full max-w-lg text-sm text-zinc-500">Loading trip…</p>
+      <p className="w-full text-sm text-muted-foreground">Loading trip…</p>
     );
   }
 
@@ -73,20 +73,27 @@ export function TripPage({ tripId }: TripPageProps) {
   }
 
   return (
-    <div className="flex w-full max-w-2xl flex-col gap-6">
+    <div className="grid w-full gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
+      <div className="order-1 flex min-w-0 flex-col gap-8">
+        <TripDetail trip={trip.data} />
+        <section className="flex w-full flex-col gap-3">
+          <h2 className="font-heading text-lg font-semibold tracking-tight">
+            Places
+          </h2>
+          <PlacesPicker destinationId={trip.data.destination_id} />
+        </section>
+      </div>
       {showMap && geojson.data ? (
-        <TripMap
-          geojson={geojson.data}
-          onCollapse={() => {
-            setMapCollapsed(true);
-          }}
-        />
+        <div className="order-2 min-w-0 lg:sticky lg:top-24">
+          <TripMap
+            geojson={geojson.data}
+            className="h-56 lg:h-[min(70vh,36rem)]"
+            onCollapse={() => {
+              setMapCollapsed(true);
+            }}
+          />
+        </div>
       ) : null}
-      <TripDetail trip={trip.data} />
-      <section className="flex w-full max-w-2xl flex-col gap-2">
-        <h2 className="text-sm font-semibold tracking-tight">Places</h2>
-        <PlacesPicker destinationId={trip.data.destination_id} />
-      </section>
     </div>
   );
 }
